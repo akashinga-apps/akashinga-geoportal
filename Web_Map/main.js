@@ -3,7 +3,7 @@ window.addEventListener('DOMContentLoaded', init);
 
 function init() {
   // ---- Map & Controls ----
-  const extentMap = [2958541, -2113452, 3431323, -1712425];
+  const extentMap = [3042818.232, -2025209.466, 3500000, -1796054.020];
 
   const attributionControl = new ol.control.Attribution({ collapsible: true });
   const scaleLineControl = new ol.control.ScaleLine();
@@ -61,8 +61,8 @@ function init() {
     layers: [baseMapsLayerGroup],
     view: new ol.View({
       extent: extentMap,
-      center: [3107417, -2109428],
-      zoom: 7,
+      center: [3201452, -1899775],
+      zoom: 5,
       maxZoom: 18,
       minZoom: 7,
       rotation: 0
@@ -97,31 +97,31 @@ function init() {
     const name = feature.get('Name') || '';
 
     let strokeColor = '#8B4513';  // base brown
-    let strokeWidth = 2.2;
+    let strokeWidth = 1;
     let lineDash = undefined;     // solid by default
 
     if (type === 'national road') {
       strokeColor = '#5C2E0E';    // darkest brown
-      strokeWidth = 5.2;
+      strokeWidth = 2.2;
     } else if (type === 'district access road') {
       strokeColor = '#754022';
-      strokeWidth = 3;
+      strokeWidth = 1.5;
     } else if (type === 'community access roads') {
       strokeColor = '#8B4513';
-      strokeWidth = 2.6;
+      strokeWidth = 1.2;
     } else if (type === 'park access road') {
       strokeColor = '#A35B2A';
-      strokeWidth = 2.4;
+      strokeWidth = 1.1;
     } else if (type === 'park feeder road') {
       strokeColor = '#C7824C';
-      strokeWidth = 2;
+      strokeWidth = 1;
     } else if (type === 'tracks') {
       strokeColor = '#E2BC8E';
-      strokeWidth = 1.6;
+      strokeWidth = 0.8;
     } else {
       // Anything else = brown dotted line
       strokeColor = '#8B4513';
-      strokeWidth = 1.8;
+      strokeWidth = 0.25;
       lineDash = [4, 4]; // dotted pattern
     }
 
