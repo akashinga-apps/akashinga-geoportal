@@ -90,52 +90,7 @@ function init() {
   const popup = new ol.Overlay({ element: popupEl });
   map.addOverlay(popup);
 
-  // ---- Layers: Operational areas (polygons/lines) ----
-  const zimbabweBoundary = new ol.layer.VectorImage({
-    source: new ol.source.Vector({
-      url: './resources/shapefiles/zimBoundary.geojson',
-      format: new ol.format.GeoJSON()
-    }),
-    visible: false,
-    title: 'zimbabwe',
-    style: new ol.style.Style({
-      fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.01)' }),
-      stroke: new ol.style.Stroke({ color: 'red', width: 3 })
-    })
-  });
-
-  const districtsLayer = new ol.layer.VectorImage({
-    source: new ol.source.Vector({
-      url: './resources/shapefiles/Districts.geojson',
-      format: new ol.format.GeoJSON()
-    }),
-    visible: true,
-    title: 'districts',
-    style: (feature) => [
-      new ol.style.Style({
-        fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.35)' }),
-        stroke: new ol.style.Stroke({ color: '#030303ff', width: 2 })
-      }),
-      labelStyle(feature, 10)
-    ]
-  });
-
-  const wardsLayer = new ol.layer.VectorImage({
-    source: new ol.source.Vector({
-      url: './resources/shapefiles/reserve.geojson',
-      format: new ol.format.GeoJSON()
-    }),
-    visible: false,
-    title: 'wards',
-    style: (feature) => [
-      new ol.style.Style({
-        fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.35)' }),
-        stroke: new ol.style.Stroke({ color: '#030303ff', width: 2 })
-      }),
-      labelStyle(feature, 12)
-    ]
-  });
-
+  // ---- Styles ----
   function roadStyle(feature) {
     const typeRaw = feature.get('Type');
     const type = typeRaw ? String(typeRaw).toLowerCase() : '';
@@ -194,6 +149,84 @@ function init() {
     return style;
   }
 
+  function campStyle(feature) {
+    const name = feature.get('Name') || '';
+
+    return new ol.style.Style({
+      image: new ol.style.RegularShape({
+        points: 3,
+        radius: 10,
+        rotation: Math.PI,             // triangle pointing down = camp/tent vibe
+        fill: new ol.style.Fill({
+          color: '#FF8C00'             // dark orange
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ffffff',
+          width: 1.5
+        })
+      }),
+      text: name
+        ? new ol.style.Text({
+            text: String(name),
+            font: '11px Arial',
+            fill: new ol.style.Fill({ color: '#2b2b2b' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+            offsetY: -18,
+            textAlign: 'center'
+          })
+        : undefined
+    });
+  }
+
+
+
+  // ---- Layers: Operational areas (polygons/lines) ----
+  const zimbabweBoundary = new ol.layer.VectorImage({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/zimBoundary.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'zimbabwe',
+    style: new ol.style.Style({
+      fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.01)' }),
+      stroke: new ol.style.Stroke({ color: 'red', width: 3 })
+    })
+  });
+
+  const districtsLayer = new ol.layer.VectorImage({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Districts.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: true,
+    title: 'districts',
+    style: (feature) => [
+      new ol.style.Style({
+        fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.35)' }),
+        stroke: new ol.style.Stroke({ color: '#030303ff', width: 2 })
+      }),
+      labelStyle(feature, 10)
+    ]
+  });
+
+  const wardsLayer = new ol.layer.VectorImage({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/reserve.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'wards',
+    style: (feature) => [
+      new ol.style.Style({
+        fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.35)' }),
+        stroke: new ol.style.Stroke({ color: '#030303ff', width: 2 })
+      }),
+      labelStyle(feature, 12)
+    ]
+  });
+
+  
 
   const roadsLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
@@ -205,7 +238,16 @@ function init() {
     style: roadStyle
   });
 
-  
+  const campsLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Camp.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'camps',
+    style: campStyle
+  });
+
 
   // ---- Point layers (filterable) ----
   const styleIcons = {
@@ -231,6 +273,7 @@ function init() {
        districtsLayer,
       wardsLayer,
       roadsLayer,
+      campsLayer,
       gardens,
       waterPoints,
       sandDams,
@@ -315,6 +358,7 @@ function init() {
     }
     openFeatureModal(hit.feature);
   });
+  
 
   // ---- Helpers ----
 

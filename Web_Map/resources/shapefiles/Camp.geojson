@@ -1,0 +1,15 @@
+{
+"type": "FeatureCollection",
+"name": "Camp",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": "0", "Name": "Foma Camp", "Description": null, "YearEstablished": null, "Conservancy": "Songo", "Block": null, "Ward": null, "District": null, "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 27.979298510633345, -17.194170635966803, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": "1", "Name": "Songo Camp", "Description": null, "YearEstablished": null, "Conservancy": "Songo", "Block": null, "Ward": null, "District": null, "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.095232726018001, -17.26694952827452, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": "2", "Name": "Sengwa Camp", "Description": null, "YearEstablished": null, "Conservancy": "Songo", "Block": null, "Ward": null, "District": null, "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.014407926017974, -17.046052789812904, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": "0", "Name": "Fly Camp", "Description": null, "YearEstablished": null, "Conservancy": "Songo", "Block": null, "Ward": null, "District": null, "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 27.723906904594621, -17.180625935970458, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Gomo Camp", "Description": null, "YearEstablished": null, "Conservancy": "Phundundu", "Block": null, "Ward": null, "District": null, "Reserve": "Phundundu" }, "geometry": { "type": "Point", "coordinates": [ 29.38391, -16.34066, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Carbon Green Camp", "Description": null, "YearEstablished": null, "Conservancy": "Phundundu", "Block": null, "Ward": null, "District": null, "Reserve": "Phundundu" }, "geometry": { "type": "Point", "coordinates": [ 29.4277, -16.31789, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Miombo", "Description": null, "YearEstablished": null, "Conservancy": "Phundundu", "Block": null, "Ward": null, "District": null, "Reserve": "Phundundu" }, "geometry": { "type": "Point", "coordinates": [ 29.381510672468863, -16.352235202330451, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Camp 15", "Description": null, "YearEstablished": null, "Conservancy": "Phundundu", "Block": null, "Ward": null, "District": null, "Reserve": "Phundundu" }, "geometry": { "type": "Point", "coordinates": [ 29.381524467549351, -16.363899732237599, 0.0 ] } }
+]
+}
