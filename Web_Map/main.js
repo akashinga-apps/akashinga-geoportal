@@ -179,6 +179,20 @@ function init() {
   }
 
 
+  function waterBoundaryStyle(feature) {
+    return new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: '#003366', // dark blue outline
+        width: 2
+      }),
+      fill: new ol.style.Fill({
+        color: 'rgba(0, 102, 204, 0.3)' // semi-transparent blue fill
+      })
+    });
+  }
+
+
+
 
   // ---- Layers: Operational areas (polygons/lines) ----
   const zimbabweBoundary = new ol.layer.VectorImage({
@@ -243,10 +257,21 @@ function init() {
       url: './resources/shapefiles/Camp.geojson',
       format: new ol.format.GeoJSON()
     }),
-    visible: false,
+    visible: true,
     title: 'camps',
     style: campStyle
   });
+
+  const waterBoundaryLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Water.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'waterboundary',
+    style: waterBoundaryStyle
+  });
+
 
 
   // ---- Point layers (filterable) ----
@@ -274,6 +299,7 @@ function init() {
       wardsLayer,
       roadsLayer,
       campsLayer,
+      waterBoundaryLayer,
       gardens,
       waterPoints,
       sandDams,
