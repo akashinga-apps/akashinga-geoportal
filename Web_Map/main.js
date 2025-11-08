@@ -61,10 +61,10 @@ function init() {
     layers: [baseMapsLayerGroup],
     view: new ol.View({
       extent: extentMap,
-      center: [3201452, -1899775],
+      center: [3801452, -1899775],
       zoom: 5,
       maxZoom: 18,
-      minZoom: 7,
+      minZoom: 5,
       rotation: 0
     }),
     controls: ol.control.defaults({ attribution: false }).extend([
@@ -261,7 +261,7 @@ function init() {
 
   const filterState = { district: '', ward: '', search: '' };
 
-  const sandDams   = makePointLayer({ url: './resources/shapefiles/sandDams.geojson',    title: 'sandDams',   icon: styleIcons.sandDam });
+  const sandDams   = makePointLayer({ url: './resources/shapefiles/projects.geojson',    title: 'sandDams',   icon: styleIcons.sandDam });
   const waterPoints= makePointLayer({ url: './resources/shapefiles/WaterPoints.geojson', title: 'waterPoints',icon: styleIcons.waterPoint });
   const boreholes  = makePointLayer({ url: './resources/shapefiles/boreholes.geojson',   title: 'boreholes',  icon: styleIcons.borehole });
   const gardens    = makePointLayer({ url: './resources/shapefiles/gardens.geojson',     title: 'gardens',    icon: styleIcons.garden });

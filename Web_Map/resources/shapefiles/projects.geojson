@@ -1,0 +1,31 @@
+{
+"type": "FeatureCollection",
+"name": "projects",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "ITEM_NO": 1, "Type": "Dam", "Details": null, "Name": "SINAMUSANGA DAM", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.01094, -17.13036 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 2, "Type": "Borehole", "Details": null, "Name": "SINAMUSANGA BOREHOLE", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 27.99705, -17.11444 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 3, "Type": "School", "Details": "Akashinga is supporting 15 Learners (10 F, 5 M) through paying schools fees and --- Suplementary Teachers", "Name": "LUUNGA SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.07463, -17.11438 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 4, "Type": "Dam", "Details": null, "Name": "LUUNGA DAM", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.05673, -17.13279 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 5, "Type": "School", "Details": null, "Name": "SIZEMBA SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.11075, -17.15337 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 6, "Type": "School", "Details": null, "Name": "SIZEMBA SEC SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.10966, -17.14864 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 7, "Type": "School", "Details": null, "Name": "SIZEMBA SCHOOL BLOCK", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.10966, -17.14864 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 8, "Type": "Garden", "Details": null, "Name": "TYABA GARDEN", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.09848, -17.19661 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 9, "Type": "Sprayrase", "Details": null, "Name": "SINAMWENDA SPRAYRACE", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.01221, -17.24339 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 10, "Type": "School", "Details": null, "Name": "SINAMWENDA PRIMARY SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.00807, -17.25603 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 11, "Type": "Borehole", "Details": null, "Name": "SIAMUPA BOREHOLE", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.06832, -17.19582 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 12, "Type": "School", "Details": null, "Name": "SIAMUPA PRIMARY SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.06832, -17.19582 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 13, "Type": "School", "Details": null, "Name": "TYUNGA SEC SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.07741, -17.19187 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 14, "Type": "School", "Details": null, "Name": "NABUSENGA PRIMARY SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.05992, -17.43649 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 15, "Type": "School", "Details": null, "Name": "SIABUWA HIGH SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.05378, -17.47143 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 16, "Type": "School", "Details": null, "Name": "MALUBE PRIMARY SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.10114, -17.45062 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 17, "Type": "Borehole", "Details": null, "Name": "MALUBE BOREHOLE", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.10114, -17.45062 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 18, "Type": "School", "Details": null, "Name": "KALUNGWIZI SEC SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.17539, -17.45628 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 19, "Type": "Borehole", "Details": null, "Name": "KALUNGWIZI BOREHOLE", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.17539, -17.45628 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 20, "Type": "School", "Details": null, "Name": "SINAMUSANGA SEC SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.02045, -17.11502 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 21, "Type": "Bakery", "Details": null, "Name": "SINAMUSANGA BAKERY", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.02631, -17.11473 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 22, "Type": "School", "Details": null, "Name": "SINAMUSANGA PRIMARY BLOCK", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.01654, -17.11124 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 23, "Type": "School", "Details": null, "Name": "SINAMUSANGA PRIMARY SCHOLARSHIP", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.01654, -17.11124 ] } },
+{ "type": "Feature", "properties": { "ITEM_NO": 24, "Type": "Borehole", "Details": null, "Name": "SIZEMBA BOREHOLE", "Reserve": "Songo" }, "geometry": { "type": "Point", "coordinates": [ 28.10175, -17.15783 ] } }
+]
+}
