@@ -311,15 +311,6 @@ function init() {
     style: roadStyle
   });
 
-  const campsLayer = new ol.layer.Vector({
-    source: new ol.source.Vector({
-      url: './resources/shapefiles/Camp.geojson',
-      format: new ol.format.GeoJSON()
-    }),
-    visible: true,
-    title: 'camps',
-    style: campStyle
-  });
 
   const waterBoundaryLayer = new ol.layer.Vector({
     source: new ol.source.Vector({
@@ -360,6 +351,17 @@ function init() {
     title: 'buildings',
     style: buildingStyle
   });
+
+  const campsLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Camp.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: true,
+    title: 'camps',
+    style: campStyle
+  });
+
 
   // point-like icon layers
   const styleIcons = {
@@ -402,12 +404,12 @@ function init() {
     layers: [
       zimbabweBoundary,
       districtsLayer,
+      reserveLayer,
       wardsLayer,
       roadsLayer,
       villageLayer,
-      campsLayer,
       buildingsLayer,
-      reserveLayer,
+      campsLayer,
       waterBoundaryLayer,
       gardens,
       waterPoints,
