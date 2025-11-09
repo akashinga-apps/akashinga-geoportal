@@ -179,6 +179,67 @@ function init() {
   }
 
 
+  function villageStyle(feature) {
+  const name = feature.get('Name') || '';
+
+  return new ol.style.Style({
+    image: new ol.style.RegularShape({
+      points: 4,                     // 4 points = square
+      radius: 4,                     // adjust size as needed
+      angle: Math.PI / 4,            // rotate so it’s a square, not a diamond
+      fill: new ol.style.Fill({
+        color: '#ff0000'             // solid red
+      }),
+      stroke: new ol.style.Stroke({
+        color: '#ffffff',
+        width: 1.5
+      })
+    }),
+    text: name
+      ? new ol.style.Text({
+          text: String(name),
+          font: '11px Arial',
+          fill: new ol.style.Fill({ color: '#2b2b2b' }),
+          stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+          offsetY: -18,
+          textAlign: 'center'
+        })
+      : undefined
+  });
+}
+
+
+
+
+  function projectStyle(feature) {
+    const name = feature.get('Name') || '';
+
+    return new ol.style.Style({
+      image: new ol.style.RegularShape({
+        points: 3,
+        radius: 10,
+        rotation: Math.PI,             // triangle pointing down = camp/tent vibe
+        fill: new ol.style.Fill({
+          color: '#14e617ff'             // dark orange
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ffffff',
+          width: 1.5
+        })
+      }),
+      text: name
+        ? new ol.style.Text({
+            text: String(name),
+            font: '8px Arial',
+            fill: new ol.style.Fill({ color: '#2b2b2b' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+            offsetY: -18,
+            textAlign: 'center'
+          })
+        : undefined
+    });
+  }
+
   function waterBoundaryStyle(feature) {
     return new ol.style.Style({
       stroke: new ol.style.Stroke({
@@ -190,6 +251,42 @@ function init() {
       })
     });
   }
+
+
+  const wardsLayer = new ol.layer.VectorImage({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Wards.geojson', // if your wards are in another file, point to it here
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'wards',
+    style: (feature) => [
+      new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,255,0.01)'   // almost transparent
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#000000',                  // black
+          width: 1.5,
+          lineDash: [6, 6]                   // dotted/dashed boundary
+        })
+      }),
+      new ol.style.Style({
+        text: new ol.style.Text({
+          text: String(
+            feature.get('Names') ||
+            feature.get('Name')  ||
+            ''
+          ),
+          font: '11px Arial',
+          fill: new ol.style.Fill({ color: '#000' }),
+          stroke: new ol.style.Stroke({ color: '#fff', width: 3 }),
+          textAlign: 'center'
+        })
+      })
+    ]
+  });
+ 
 
 
 
@@ -210,7 +307,7 @@ function init() {
 
   const districtsLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
-      url: './resources/shapefiles/Districts.geojson',
+      url: './resources/shapefiles/semiAridDistricts.geojson',
       format: new ol.format.GeoJSON()
     }),
     visible: true,
@@ -224,17 +321,17 @@ function init() {
     ]
   });
 
-  const wardsLayer = new ol.layer.VectorImage({
+  const reserveLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
       url: './resources/shapefiles/reserve.geojson',
       format: new ol.format.GeoJSON()
     }),
-    visible: false,
-    title: 'wards',
+    visible: true,
+    title: 'reserve',
     style: (feature) => [
       new ol.style.Style({
         fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.35)' }),
-        stroke: new ol.style.Stroke({ color: '#030303ff', width: 2 })
+        stroke: new ol.style.Stroke({ color: ' #FF470D', width:2  })
       }),
       labelStyle(feature, 12)
     ]
@@ -271,12 +368,31 @@ function init() {
     title: 'waterboundary',
     style: waterBoundaryStyle
   });
+  const projectsLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/projects.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'projects',
+    style: projectStyle
+  });
 
+
+  const villageLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/villages.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'villages',
+    style: villageStyle
+  });
 
 
   // ---- Point layers (filterable) ----
   const styleIcons = {
-    sandDam:   new ol.style.Icon({ src: './resources/icons/icon-yellow.png', scale: 0.3, anchor: [0.5,0.5] }),
+    // sandDam:   new ol.style.Icon({ src: './resources/icons/icon-yellow.png', scale: 0.3, anchor: [0.5,0.5] }),
     garden:    new ol.style.Icon({ src: './resources/icons/icon-green.png',  scale: 0.3 }),
     waterPoint:new ol.style.Icon({ src: './resources/icons/icon-lblue.png',  scale: 0.3 }),
     woodlot:   new ol.style.Icon({ src: './resources/icons/tree.png',        scale: 0.12 }),
@@ -286,7 +402,7 @@ function init() {
 
   const filterState = { district: '', ward: '', search: '' };
 
-  const sandDams   = makePointLayer({ url: './resources/shapefiles/projects.geojson',    title: 'sandDams',   icon: styleIcons.sandDam });
+  // const sandDams   = makePointLayer({ url: './resources/shapefiles/projects.geojson',    title: 'sandDams',   icon: styleIcons.sandDam });
   const waterPoints= makePointLayer({ url: './resources/shapefiles/WaterPoints.geojson', title: 'waterPoints',icon: styleIcons.waterPoint });
   const boreholes  = makePointLayer({ url: './resources/shapefiles/boreholes.geojson',   title: 'boreholes',  icon: styleIcons.borehole });
   const gardens    = makePointLayer({ url: './resources/shapefiles/gardens.geojson',     title: 'gardens',    icon: styleIcons.garden });
@@ -298,11 +414,13 @@ function init() {
        districtsLayer,
       wardsLayer,
       roadsLayer,
+      villageLayer,
       campsLayer,
+      reserveLayer,
       waterBoundaryLayer,
       gardens,
       waterPoints,
-      sandDams,
+      projectsLayer,
       gabions, 
       woodlots, 
       boreholes]
@@ -331,20 +449,20 @@ function init() {
   );
 
   // ---- Filtering: populate dropdowns when point layers ready ----
-  const pointLayers = [sandDams, waterPoints, boreholes, gardens, woodlots, gabions];
+  const pointLayers = [projectsLayer, waterPoints, boreholes, campsLayer, woodlots, gabions];
   Promise.all(pointLayers.map(waitForVectorReady)).then(() => {
-    const values = collectUniqueValues(pointLayers, ['District', 'Ward']);
-    fillSelect(districtSel, values['District']);
+    const values = collectUniqueValues(pointLayers, ['Reserve', 'Ward']);
+    fillSelect(districtSel, values['Reserve']);
     fillSelect(wardSel, values['Ward']);
   });
 
-  districtSel.addEventListener('change', () => { filterState.district = districtSel.value; applyFilters(); saveSessionState(); });
+  districtSel.addEventListener('change', () => { filterState.Reserve = districtSel.value; applyFilters(); saveSessionState(); });
   wardSel.addEventListener('change', () => { filterState.ward = wardSel.value; applyFilters(); saveSessionState(); });
   searchInput.addEventListener('input', () => { filterState.search = searchInput.value.trim(); applyFilters(); });
 
   clearBtn.addEventListener('click', () => {
     districtSel.value = ''; wardSel.value = ''; searchInput.value = '';
-    filterState.district = filterState.ward = filterState.search = '';
+    filterState.Reserve = filterState.ward = filterState.search = '';
     applyFilters();
     showToast('Filters cleared');
     saveSessionState();
@@ -427,7 +545,7 @@ function init() {
   }
 
   function passesFilters(feature) {
-    const d = clean(feature.get('District'));
+    const d = clean(feature.get('Reserve'));
     const w = clean(feature.get('Ward'));
     const nm = clean(feature.get('Names') || feature.get('Name'));
 
@@ -441,7 +559,7 @@ function init() {
   }
 
   function isPointLayerTitle(t) {
-    return ['sandDams','waterPoints','boreholes','gardens','woodlots','gabions'].includes(t);
+    return ['projects','waterPoints','boreholes','camps','woodlots','gabions'].includes(t);
   }
 
   function waitForVectorReady(layer) {
@@ -569,7 +687,7 @@ function init() {
     layerCheckboxes.forEach(cb => cb.checked = visibleSet.has(cb.value));
 
     if (state.filters) {
-      filterState.district = state.filters.district || '';
+      filterState.district = state.filters.Reserve || '';
       filterState.ward = state.filters.ward || '';
       filterState.search = state.filters.search || '';
       districtSel.value = filterState.district;
@@ -613,7 +731,7 @@ function init() {
   }
 
   function buildAttributesTable(ft){
-    const preferred = ['Names','Name','Project','Type','Program','District','Ward','Source','Village','Longitude','Latitude'];
+    const preferred = ['Names','Name','Project','Type','Program','District','Ward','Reserve','Village','Longitude','Latitude'];
     const rows = [];
 
     preferred.forEach(k => {
