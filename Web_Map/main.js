@@ -1,8 +1,8 @@
-// Main entry
+// main.js
 window.addEventListener('DOMContentLoaded', init);
 
 function init() {
-  // ---- Map & Controls ----
+  // ---------- BASIC MAP SETUP ----------
   const extentMap = [3042818.232, -2025209.466, 3500000, -1796054.020];
 
   const attributionControl = new ol.control.Attribution({ collapsible: true });
@@ -62,41 +62,37 @@ function init() {
       center: [3801452, -1899775],
       zoom: 5,
       maxZoom: 18,
-      minZoom: 5,
-      rotation: 0
+      minZoom: 5
     }),
-    controls: ol.control.defaults({ attribution: false }).extend([
-      attributionControl,
-      scaleLineControl,
-      zoomSliderControl,
-      fullScreenControl,
-      zoomToExtentControl
-    ])
+    controls: ol.control
+      .defaults({ attribution: false })
+      .extend([attributionControl, scaleLineControl, zoomSliderControl, fullScreenControl, zoomToExtentControl])
   });
 
-  // ---- UI refs ----
+  // ---------- SHORTCUTS & UI REFS ----------
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-  const sidebar = $('#sidebar');
-  $('#sidebar-toggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
 
-  // updated: we now have ONLY reserve + dynamic filters
+  const sidebar = $('#sidebar');
+  const searchInput = $('#search-input');
   const reserveSel = $('#filter-reserve');
   const filterLayerDyn = $('#filter-layer-dyn');
   const filterFieldDyn = $('#filter-field-dyn');
   const filterValueDyn = $('#filter-value-dyn');
-
-  const searchInput = $('#search-input');
   const clearBtn = $('#clear-filters');
   const saveBtn = $('#save-state');
   const restoreBtn = $('#restore-state');
   const exportBtn = $('#export-geojson');
   const toast = $('#toast');
+
+  $('#sidebar-toggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+
+  // popup for coords
   const popupEl = $('#popup-container');
   const popup = new ol.Overlay({ element: popupEl });
   map.addOverlay(popup);
 
-  // ---- Styles ----
+  // ---------- STYLES ----------
   function roadStyle(feature) {
     const typeRaw = feature.get('Type');
     const type = typeRaw ? String(typeRaw).toLowerCase() : '';
@@ -184,7 +180,6 @@ function init() {
 
   function villageStyle(feature) {
     const name = feature.get('Name') || '';
-
     return new ol.style.Style({
       image: new ol.style.RegularShape({
         points: 4,
@@ -213,7 +208,6 @@ function init() {
 
   function projectStyle(feature) {
     const name = feature.get('Name') || '';
-
     return new ol.style.Style({
       image: new ol.style.RegularShape({
         points: 3,
@@ -240,7 +234,7 @@ function init() {
     });
   }
 
-  function waterBoundaryStyle(feature) {
+  function waterBoundaryStyle() {
     return new ol.style.Style({
       stroke: new ol.style.Stroke({
         color: '#003366',
@@ -252,8 +246,8 @@ function init() {
     });
   }
 
-  // --- Building Style (solid grey + glow) ---
-  function buildingStyle(feature) {
+  // grey buildings with glow
+  function buildingStyle() {
     return [
       new ol.style.Style({
         stroke: new ol.style.Stroke({
@@ -273,8 +267,21 @@ function init() {
     ];
   }
 
-  // -------------- Layers -------------------------------------
+  function labelStyle(feature, fontPx) {
+    const name = feature.get('Names') || feature.get('Name');
+    if (!name) return null;
+    return new ol.style.Style({
+      text: new ol.style.Text({
+        text: String(name),
+        font: `${fontPx}px Arial`,
+        fill: new ol.style.Fill({ color: '#000' }),
+        stroke: new ol.style.Stroke({ color: '#fff', width: 3 }),
+        textAlign: 'center'
+      })
+    });
+  }
 
+  // ---------- LAYERS ----------
   const wardsLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
       url: './resources/shapefiles/Wards.geojson',
@@ -344,7 +351,7 @@ function init() {
     style: (feature) => [
       new ol.style.Style({
         fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.35)' }),
-        stroke: new ol.style.Stroke({ color: ' #FF470D', width: 2 })
+        stroke: new ol.style.Stroke({ color: '#FF470D', width: 2 })
       }),
       labelStyle(feature, 12)
     ]
@@ -410,7 +417,7 @@ function init() {
     style: buildingStyle
   });
 
-  // ---- Point layers (filterable) ----
+  // ---- Point-like icons ----
   const styleIcons = {
     garden: new ol.style.Icon({ src: './resources/icons/icon-green.png', scale: 0.3 }),
     waterPoint: new ol.style.Icon({ src: './resources/icons/icon-lblue.png', scale: 0.3 }),
@@ -419,13 +426,13 @@ function init() {
     borehole: new ol.style.Icon({ src: './resources/icons/borehole.png', scale: 0.1 })
   };
 
-  // IMPORTANT: now only reserve + search
+  // we use only RESERVE + SEARCH
   const filterState = { reserve: '', search: '' };
 
   const waterPoints = makePointLayer({
     url: './resources/shapefiles/WaterPoints.geojson',
-    title: 'waterPoints',
-    icon: styleIcons.waterPoint
+      title: 'waterPoints',
+      icon: styleIcons.waterPoint
   });
   const boreholes = makePointLayer({
     url: './resources/shapefiles/boreholes.geojson',
@@ -469,18 +476,16 @@ function init() {
   });
   map.addLayer(thematicGroup);
 
-  // ---- Base layer radio logic ----
+  // ---------- BASE LAYER RADIO ----------
   const baseRadios = $$('input[name=baseLayerRadioButton]');
   baseRadios.forEach((r) =>
     r.addEventListener('change', () => {
-      baseMapsLayerGroup
-        .getLayers()
-        .forEach((l) => l.setVisible(l.get('title') === r.value));
+      baseMapsLayerGroup.getLayers().forEach((l) => l.setVisible(l.get('title') === r.value));
       saveSessionState();
     })
   );
 
-  // ---- Thematic layer checkbox logic ----
+  // ---------- THEMATIC LAYER CHECKBOX ----------
   const layerCheckboxes = $$('input[name=rasterLayerCheckBox]');
   layerCheckboxes.forEach((cb) => (cb.checked = false));
   layerCheckboxes.forEach((cb) =>
@@ -496,39 +501,41 @@ function init() {
     })
   );
 
-  // ---- Filtering: build list of point layers for reserve/search ----
+  // ---------- POINT LAYERS LIST ----------
   const pointLayers = [projectsLayer, waterPoints, boreholes, campsLayer, woodlots, gabions];
 
-  // populate Reserve dropdown from point layers once they load
+  // populate RESERVE dropdown from point layers once loaded
   Promise.all(pointLayers.map(waitForVectorReady)).then(() => {
     const values = collectUniqueValues(pointLayers, ['Reserve']);
     fillReserveSelect(reserveSel, values['Reserve'] || []);
   });
 
-  // RESERVE change
+  // ---------- SIMPLE FILTERS (RESERVE + SEARCH) ----------
   reserveSel.addEventListener('change', () => {
     filterState.reserve = reserveSel.value;
     applyFilters();
-    applyDynamicFilter(); // so polygon layers also redraw
+    applyDynamicFilter();
     saveSessionState();
   });
 
-  // SEARCH change
   searchInput.addEventListener('input', () => {
     filterState.search = searchInput.value.trim();
     applyFilters();
     applyDynamicFilter();
   });
 
-  // ---- Dynamic FILTER (layer -> field -> value) ----
+  // ---------- DYNAMIC FILTER STATE ----------
   const dynamicFilter = {
     layerTitle: '',
     field: '',
     value: ''
   };
 
-  // after we have the thematic group, we can populate layer select
-  const allFilterableLayers = thematicGroup.getLayers().getArray().filter((l) => l.getSource && l.getSource().getFormat);
+  // all vector/thematic layers to filter
+  const allFilterableLayers = thematicGroup
+    .getLayers()
+    .getArray()
+    .filter((l) => l.getSource && l.getSource().getFormat);
 
   // fill layer dropdown
   allFilterableLayers.forEach((l) => {
@@ -558,7 +565,6 @@ function init() {
     if (!layer) return;
 
     await waitForVectorReady(layer);
-
     const feats = layer.getSource().getFeatures();
     if (!feats.length) {
       applyDynamicFilter();
@@ -594,6 +600,7 @@ function init() {
 
     const layer = allFilterableLayers.find((l) => l.get('title') === dynamicFilter.layerTitle);
     if (!layer) return;
+
     const feats = layer.getSource().getFeatures();
     const vals = new Set();
     feats.forEach((ft) => {
@@ -621,18 +628,16 @@ function init() {
     applyDynamicFilter();
   });
 
-  // ---- wrap every thematic layer so it respects dynamic filter ----
+  // ---------- WRAP LAYERS TO OBEY DYNAMIC FILTER ----------
   thematicGroup.getLayers().forEach((layer) => {
     const origStyle = layer.getStyle();
     const title = layer.get('title');
     if (!origStyle) return;
 
     layer.setStyle(function (feature, resolution) {
-      // reserve/search still only apply to point layers, but we can leave them here if needed
       if (!passesDynamicFilter(feature, title)) {
         return null;
       }
-
       if (typeof origStyle === 'function') {
         return origStyle.call(this, feature, resolution);
       }
@@ -640,14 +645,14 @@ function init() {
     });
   });
 
-  // CLEAR filters
+  // ---------- CLEAR FILTERS ----------
   clearBtn.addEventListener('click', () => {
     reserveSel.value = '';
     filterState.reserve = '';
     searchInput.value = '';
     filterState.search = '';
 
-    // clear dynamic
+    // dynamic
     filterLayerDyn.value = '';
     filterFieldDyn.innerHTML = '<option value="">Field…</option>';
     filterFieldDyn.disabled = true;
@@ -663,7 +668,7 @@ function init() {
     saveSessionState();
   });
 
-  // ---- Save / Restore ----
+  // ---------- SAVE / RESTORE ----------
   saveBtn.addEventListener('click', () => {
     persistState();
     showToast('Saved');
@@ -673,10 +678,12 @@ function init() {
     showToast(ok ? 'Restored' : 'Nothing saved yet');
   });
 
-  // ---- Export ----
-  exportBtn.addEventListener('click', () => exportFiltered(pointLayers));
+  // ---------- EXPORT (download only filtered layer) ----------
+  exportBtn.addEventListener('click', () => {
+    exportFilteredLayer();
+  });
 
-  // ---- Click handling ----
+  // ---------- MAP CLICK HANDLING ----------
   map.on('singleclick', (e) => {
     const oe = e.originalEvent;
     if (oe && oe.ctrlKey) {
@@ -710,7 +717,7 @@ function init() {
     openFeatureModal(hit.feature);
   });
 
-  // ---- Helpers ----
+  // ================ HELPERS ==================
 
   function makePointLayer({ url, title, icon }) {
     const iconStyle = new ol.style.Style({ image: icon });
@@ -723,34 +730,6 @@ function init() {
     });
   }
 
-  function labelStyle(feature, fontPx) {
-    const name = feature.get('Names') || feature.get('Name');
-    if (!name) return null;
-    return new ol.style.Style({
-      text: new ol.style.Text({
-        text: String(name),
-        font: `${fontPx}px Arial`,
-        fill: new ol.style.Fill({ color: '#000' }),
-        stroke: new ol.style.Stroke({ color: '#fff', width: 3 }),
-        textAlign: 'center'
-      })
-    });
-  }
-
-  function wardFillStyle(feature) {
-    const v = Number(feature.get('MEAN_1'));
-    let color = [255, 255, 0, 0.35];
-    if (!isNaN(v)) {
-      if (v >= 8) color = [255, 0, 0, 0.35];
-      else if (v <= 3) color = [0, 255, 0, 0.35];
-    }
-    return new ol.style.Style({
-      fill: new ol.style.Fill({ color }),
-      stroke: new ol.style.Stroke({ color: '#222', width: 1 })
-    });
-  }
-
-  // ONLY reserve + search
   function passesFilters(feature) {
     const r = clean(feature.get('Reserve') || feature.get('reserve'));
     const nm = clean(feature.get('Names') || feature.get('Name'));
@@ -768,18 +747,19 @@ function init() {
     }
   }
 
-  // dynamic filter: layer -> field -> value
   function passesDynamicFilter(feature, layerTitle) {
-    // no layer chosen -> pass
     if (!dynamicFilter.layerTitle) return true;
-    // feature not from chosen layer -> pass
     if (dynamicFilter.layerTitle !== layerTitle) return true;
-    // layer chosen but no field/value -> pass
     if (!dynamicFilter.field || !dynamicFilter.value) return true;
 
     const raw = feature.get(dynamicFilter.field);
     if (raw == null) return false;
     return String(raw).trim() === String(dynamicFilter.value).trim();
+  }
+
+  function applyFilters() {
+    // only point layers use the simple reserve/search
+    pointLayers.forEach((l) => l.changed());
   }
 
   function applyDynamicFilter() {
@@ -825,16 +805,13 @@ function init() {
     });
   }
 
-  function applyFilters() {
-    pointLayers.forEach((l) => l.changed());
-  }
-
   function showGeographicCoords(e) {
     popup.setPosition(e.coordinate);
     const coord4326 = ol.proj.transform(e.coordinate, 'EPSG:3857', 'EPSG:4326');
     const hdms = ol.coordinate.toStringHDMS(coord4326, 2);
     popupEl.innerHTML = `Lat/Lon: ${hdms}<br>Zoom: ${map.getView().getZoom().toFixed(1)}`;
   }
+
   function showProjectedCoords(e) {
     popup.setPosition(e.coordinate);
     const xy = ol.coordinate.toStringXY(e.coordinate, 0);
@@ -847,30 +824,54 @@ function init() {
     setTimeout(() => toast.classList.add('hidden'), 1500);
   }
 
-  // ---- Export filtered features ----
-  function exportFiltered(layers) {
-    const format = new ol.format.GeoJSON();
-    const out = [];
-    layers.forEach((l) => {
-      if (!l.getVisible()) return;
-      const feats = l
-        .getSource()
-        .getFeatures()
-        .filter((f) => passesFilters(f) && passesDynamicFilter(f, l.get('title')))
-        .map((f) => {
-          const c = f.clone();
-          const g = c.getGeometry();
-          if (g && g.transform) g.transform('EPSG:3857', 'EPSG:4326');
-          return c;
-        });
-      out.push(...feats);
-    });
-    if (!out.length) {
-      showToast('Nothing to export');
+  // ---------- EXPORT ONLY FILTERED LAYER ----------
+  function exportFilteredLayer() {
+    const layerTitle = dynamicFilter.layerTitle;
+    if (!layerTitle) {
+      showToast('Select a layer in the filter first.');
       return;
     }
-    const geojson = format.writeFeaturesObject(out, { featureProjection: 'EPSG:4326', decimals: 6 });
-    downloadJSON(geojson, `geohub_export_${new Date().toISOString().slice(0, 10)}.geojson`);
+
+    const layer = thematicGroup
+      .getLayers()
+      .getArray()
+      .find((l) => l.get('title') === layerTitle);
+
+    if (!layer || !layer.getSource) {
+      showToast('Layer not found or not exportable.');
+      return;
+    }
+
+    const feats = layer.getSource().getFeatures();
+    const format = new ol.format.GeoJSON();
+
+    const filtered = feats
+      .filter((f) => {
+        // only point layers also obey reserve/search
+        const basicOK = isPointLayerTitle(layerTitle) ? passesFilters(f) : true;
+        const dynOK = passesDynamicFilter(f, layerTitle);
+        return basicOK && dynOK;
+      })
+      .map((f) => {
+        const c = f.clone();
+        const g = c.getGeometry();
+        if (g && g.transform) g.transform('EPSG:3857', 'EPSG:4326');
+        return c;
+      });
+
+    if (!filtered.length) {
+      showToast('No features to export for this filter.');
+      return;
+    }
+
+    const geojson = format.writeFeaturesObject(filtered, {
+      featureProjection: 'EPSG:4326',
+      decimals: 6
+    });
+
+    const filenameSafe = layerTitle.replace(/[^a-z0-9_-]/gi, '_');
+    downloadJSON(geojson, `export_${filenameSafe}.geojson`);
+    showToast('Layer exported');
   }
 
   function downloadJSON(obj, filename) {
@@ -883,7 +884,7 @@ function init() {
     URL.revokeObjectURL(url);
   }
 
-  // ---- Save/Restore state (localStorage) ----
+  // ---------- SAVE / RESTORE ----------
   const STATE_KEY = 'geohub_state_v1';
 
   function persistState() {
@@ -938,13 +939,11 @@ function init() {
       reserveSel.value = filterState.reserve;
       searchInput.value = filterState.search;
 
-      // restore dynamic
       if (state.filters.dynamic) {
         dynamicFilter.layerTitle = state.filters.dynamic.layerTitle || '';
         dynamicFilter.field = state.filters.dynamic.field || '';
         dynamicFilter.value = state.filters.dynamic.value || '';
 
-        // set UI selects
         if (dynamicFilter.layerTitle) {
           filterLayerDyn.value = dynamicFilter.layerTitle;
         }
@@ -956,11 +955,10 @@ function init() {
     return true;
   }
 
-  // Try restoring once on load
+  // try to restore once
   restoreState();
 
-  // ===== Feature Details (Modal & New Tab) =====
-
+  // ---------- FEATURE MODAL / PAGE ----------
   const IMAGE_BASE_DIR = './resources/images/dams/';
   const IMAGE_EXT = '.jpg';
   const IMAGE_KEYS = [
@@ -1064,10 +1062,13 @@ function init() {
     const close = () => modal.classList.add('hidden');
     btnClose.onclick = close;
     modal.querySelector('.modal-backdrop').onclick = close;
-    window.addEventListener('keydown', escClose, { once: true });
-    function escClose(ev) {
-      if (ev.key === 'Escape') close();
-    }
+    window.addEventListener(
+      'keydown',
+      (ev) => {
+        if (ev.key === 'Escape') close();
+      },
+      { once: true }
+    );
 
     btnOpenTab.onclick = () => openFeatureInNewTab(ft);
   }
