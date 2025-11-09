@@ -253,6 +253,38 @@ function init() {
   }
 
 
+  // --- Building Style ---
+  // --- Building Style (enhanced glow) ---
+  function buildingStyle(feature) {
+    return [
+      // Outer "glow"
+      new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'rgba(255, 255, 255, 0.5)',  // soft white glow
+          width: 6
+        })
+      }),
+      // Main building body
+      new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(128, 128, 128, 0.85)'  // solid grey
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#666666',  // dark grey border
+          width: 1.8
+        })
+      })
+    ];
+  }
+
+
+
+
+
+
+
+  // -------------- Layers-------------------------------------
+
   const wardsLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
       url: './resources/shapefiles/Wards.geojson', // if your wards are in another file, point to it here
@@ -389,6 +421,18 @@ function init() {
     style: villageStyle
   });
 
+  // --- Buildings Layer ---
+const buildingsLayer = new ol.layer.Vector({
+  source: new ol.source.Vector({
+    url: './resources/shapefiles/Homesteads.geojson',   // update path if needed
+    format: new ol.format.GeoJSON()
+  }),
+  visible: false,
+  title: 'buildings',
+  style: buildingStyle
+});
+
+
 
   // ---- Point layers (filterable) ----
   const styleIcons = {
@@ -411,11 +455,12 @@ function init() {
 
   const thematicGroup = new ol.layer.Group({
     layers: [zimbabweBoundary,
-       districtsLayer,
+      districtsLayer,
       wardsLayer,
       roadsLayer,
       villageLayer,
       campsLayer,
+      buildingsLayer,
       reserveLayer,
       waterBoundaryLayer,
       gardens,
