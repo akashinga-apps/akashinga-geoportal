@@ -24,13 +24,26 @@
     <!-- Topbar: Filters & Actions -->
     <div class="topbar">
       <div class="tb-left">
+        <!-- search -->
         <input id="search-input" class="tb-input" placeholder="Search name…" aria-label="Search by name (e.g., site name)">
-        <select id="filter-district" class="tb-select" aria-label="Filter by district">
-          <option value="">All districts</option>
+
+        <!-- RESERVE filter (replaces district + ward) -->
+        <select id="filter-reserve" class="tb-select" aria-label="Filter by reserve">
+          <option value="">All reserves</option>
         </select>
-        <select id="filter-ward" class="tb-select" aria-label="Filter by ward">
-          <option value="">All wards</option>
+
+        <!-- dynamic layer filter -->
+        <select id="filter-layer-dyn" class="tb-select" aria-label="Select layer to filter">
+          <option value="">Filter: choose layer…</option>
         </select>
+        <select id="filter-field-dyn" class="tb-select" aria-label="Select attribute" disabled>
+          <option value="">Field…</option>
+        </select>
+        <select id="filter-value-dyn" class="tb-select" aria-label="Select value" disabled>
+          <option value="">Value…</option>
+        </select>
+
+        <!-- clear -->
         <button id="clear-filters" class="tb-btn" title="Clear filters">
           <i class="bx bx-filter-alt"></i>
         </button>
@@ -58,15 +71,13 @@
       <li><label><input type="radio" name="baseLayerRadioButton" value="OpenTopoMap"> Open Top Map</label></li>
       <li><label><input type="radio" name="baseLayerRadioButton" value="OSMStand" checked> OSM Standard</label></li>
       <li><label><input type="radio" name="baseLayerRadioButton" value="CartoLight"> CARTO Positron (Light)</label></li>
-      <!-- <li><label><input type="radio" name="baseLayerRadioButton" value="OpenTopoMap"> CARTO Dark Matter</label></li> -->
     </ul>
-
 
     <h2>Operational Areas</h2>
     <ul>
       <li><label><input type="checkbox" name="rasterLayerCheckBox" value="zimbabwe"> Zimbabwe Boundary</label></li>
       <li><label><input type="checkbox" name="rasterLayerCheckBox" value="districts"> Districts</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="wards"> Wards</label></li>      
+      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="wards"> Wards</label></li>
       <li><label><input type="checkbox" name="rasterLayerCheckBox" value="reserve"> Conservancy</label></li>
       <li><label><input type="checkbox" name="rasterLayerCheckBox" value="blocks"> Patrol Blocks</label></li>
     </ul>
@@ -86,7 +97,6 @@
 
     <h2>Community Layers</h2>
     <ul>
-
       <li><label><input type="checkbox" name="rasterLayerCheckBox" value="buildings"> Homesteads</label></li>
       <li><label><input type="checkbox" name="rasterLayerCheckBox" value="villages"> Villages</label></li>
     </ul>
