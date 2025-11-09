@@ -400,23 +400,80 @@ body {
 /* =============================
    RESPONSIVE
 ============================= */
-@media (max-width: 900px) {
+/* =============================
+   RESPONSIVE
+============================= */
+
+/* Tablets and small laptops */
+@media (max-width: 992px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    height: auto;
+  }
+
   .tb-left {
     flex-wrap: wrap;
   }
-  .layers-panel {
-    width: 230px;
+
+  .tb-input,
+  .tb-select {
+    min-width: 140px;
   }
+
+  /* make the layers panel a bit narrower */
+  .layers-panel {
+    width: 240px;
+  }
+
+  /* feature modal grid -> single column */
   .fm-grid {
     grid-template-columns: 1fr;
   }
 }
 
+/* Phones / small tablets in portrait */
 @media (max-width: 600px) {
-  .topbar {
-    flex-wrap: wrap;
-    height: auto;
+  body {
+    height: 100vh;
   }
+
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    padding-bottom: 8px;
+  }
+
+  /* stack filters vertically */
+  .tb-left,
+  .tb-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .tb-input,
+  .tb-select {
+    width: calc(50% - 6px);
+    min-width: 0;
+    background: rgba(6, 25, 12, 0.85); /* better contrast on phones */
+  }
+
+  /* buttons bigger for touch */
+  .tb-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* map needs to start below a variable-height topbar */
+  .map {
+    top: calc(60px + 46px); /* fallback; real fix is in JS to update size */
+  }
+
+  /* layers panel becomes a bottom sheet */
   .layers-panel {
     width: 100%;
     right: 0;
@@ -424,6 +481,29 @@ body {
     border-radius: 20px 20px 0 0;
     bottom: 0;
     top: auto;
-    max-height: 45vh;
+    max-height: 48vh;
+    transform: translateY(100%);
+  }
+
+  .layers-panel.show {
+    transform: translateY(0);
+  }
+
+  .lp-header-top {
+    border-radius: 20px 20px 0 0;
+  }
+
+  /* modal fit on phone */
+  .modal-dialog {
+    width: 96vw;
+    margin-top: 70px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .tb-input,
+  .tb-select {
+    width: 100%;
   }
 }

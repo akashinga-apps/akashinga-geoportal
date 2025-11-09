@@ -69,6 +69,14 @@ function init() {
       .extend([attributionControl, scaleLineControl, zoomSliderControl, fullScreenControl, zoomToExtentControl])
   });
 
+    // make map responsive to viewport changes (phones, tablets)
+  function updateMapSize() {
+    map.updateSize();
+  }
+  window.addEventListener('resize', updateMapSize);
+  window.addEventListener('orientationchange', updateMapSize);
+
+
   // ---------- UI REFS ----------
   const $ = (s) => document.querySelector(s);
   const searchInput = $('#search-input');
