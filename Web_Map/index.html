@@ -3,106 +3,141 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Akashinga-GeoHub</title>
+  <title>Akashinga GeoHub</title>
 
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet">
 
-  <!-- OpenLayers & Styles -->
+  <!-- OpenLayers -->
   <link rel="stylesheet" href="./libs/v6.14.1-dist/ol.css">
+
+  <!-- App styles -->
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
 
-  <!-- Map -->
+  <!-- TOP FILTER BAR (same colour as layers panel) -->
+  <div class="topbar">
+    <!-- brand/header -->
+    <div class="tb-brand">
+      <!-- placeholder path: replace with your real logo -->
+      <img src="./resources/icons/logo.svg" alt="Logo" class="tb-logo">
+      <div class="tb-title">
+        <span class="tb-name">AKASHINGA</span>
+        <span class="tb-sub">GeoHub</span>
+      </div>
+    </div>
+
+    <!-- filters -->
+    <div class="tb-left">
+      <input id="search-input" class="tb-input" placeholder="Search name…" aria-label="Search by name"/>
+
+      <select id="filter-reserve" class="tb-select" aria-label="Filter by reserve">
+        <option value="">All reserves</option>
+      </select>
+
+      <select id="filter-layer-dyn" class="tb-select" aria-label="Select layer to filter">
+        <option value="">Filter: choose layer…</option>
+      </select>
+      <select id="filter-field-dyn" class="tb-select" aria-label="Select attribute" disabled>
+        <option value="">Field…</option>
+      </select>
+      <select id="filter-value-dyn" class="tb-select" aria-label="Select value" disabled>
+        <option value="">Value…</option>
+      </select>
+
+      <button id="clear-filters" class="tb-btn" title="Clear filters">
+        <i class="bx bx-filter-alt"></i>
+      </button>
+    </div>
+
+    <!-- actions -->
+    <div class="tb-right">
+      <button id="save-state" class="tb-btn" title="Save view & layers"><i class="bx bx-save"></i></button>
+      <button id="restore-state" class="tb-btn" title="Restore saved"><i class="bx bx-history"></i></button>
+      <button id="export-geojson" class="tb-btn" title="Export filtered layer"><i class="bx bx-download"></i></button>
+      <button class="tb-btn" id="layers-toggle" title="Show/Hide layers panel"><i class="bx bx-layout"></i></button>
+    </div>
+  </div>
+
+  <!-- FLOATING LAYERS PANEL (RIGHT) -->
+  <div id="layers-panel" class="layers-panel show">
+    <div class="lp-header-top">
+      <div class="logo-small">
+        <img src="./resources/icons/logo.svg" alt="Logo">
+        <span>Layers</span>
+      </div>
+      <button id="layers-close" class="lp-close"><i class="bx bx-x"></i></button>
+    </div>
+
+    <div class="layer-panel">
+      <!-- Base Layers -->
+      <button class="lp-header is-open" data-target="lp-basemaps">
+        <i class="bx bx-layer"></i>
+        Base Layers
+        <i class="bx bx-chevron-down lp-caret"></i>
+      </button>
+      <div class="lp-body show" id="lp-basemaps">
+        <button class="layer-pill active" data-type="base" data-layer="OSMStand">OSM Standard</button>
+        <button class="layer-pill" data-type="base" data-layer="OpenTopoMap">Open Topo Map</button>
+        <button class="layer-pill" data-type="base" data-layer="CartoLight">CARTO Light</button>
+        <button class="layer-pill" data-type="base" data-layer="CartoDark">CARTO Voyager</button>
+      </div>
+
+      <!-- Operational Areas -->
+      <button class="lp-header" data-target="lp-operational">
+        <i class="bx bx-map-alt"></i>
+        Operational Areas
+        <i class="bx bx-chevron-down lp-caret"></i>
+      </button>
+      <div class="lp-body" id="lp-operational">
+        <button class="layer-pill toggle" data-type="thematic" data-layer="zimbabwe">Zimbabwe Boundary</button>
+        <button class="layer-pill toggle active" data-type="thematic" data-layer="districts">Districts</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="wards">Wards</button>
+        <button class="layer-pill toggle active" data-type="thematic" data-layer="reserve">Conservancy</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="roads">Roads</button>
+      </div>
+
+      <!-- Assets & Infrastructure -->
+      <button class="lp-header" data-target="lp-assets">
+        <i class="bx bx-buildings"></i>
+        Assets &amp; Infrastructure
+        <i class="bx bx-chevron-down lp-caret"></i>
+      </button>
+      <div class="lp-body" id="lp-assets">
+        <button class="layer-pill toggle active" data-type="thematic" data-layer="camps">Camps</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="waterboundary">Radio / Water Boundary</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="buildings">Homesteads / Buildings</button>
+      </div>
+
+      <!-- Community & Projects -->
+      <button class="lp-header" data-target="lp-community">
+        <i class="bx bx-group"></i>
+        Community &amp; Projects
+        <i class="bx bx-chevron-down lp-caret"></i>
+      </button>
+      <div class="lp-body" id="lp-community">
+        <button class="layer-pill toggle" data-type="thematic" data-layer="projects">Projects</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="gardens">Gardens</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="waterPoints">Water Points</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="woodlots">Woodlots</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="gabions">Gabions</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="boreholes">Boreholes</button>
+        <button class="layer-pill toggle" data-type="thematic" data-layer="villages">Villages</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
   <div id="js-map" class="map">
     <div id="popup-container" class="popup-coordinates">
       Click a feature to view details • Ctrl-Click: Lat/Lon • Shift-Click: XY • Alt-Click: open in new tab
     </div>
-
-    <!-- Topbar: Filters & Actions -->
-    <div class="topbar">
-      <div class="tb-left">
-        <!-- search -->
-        <input id="search-input" class="tb-input" placeholder="Search name…" aria-label="Search by name (e.g., site name)">
-
-        <!-- RESERVE filter (replaces district + ward) -->
-        <select id="filter-reserve" class="tb-select" aria-label="Filter by reserve">
-          <option value="">All reserves</option>
-        </select>
-
-        <!-- dynamic layer filter -->
-        <select id="filter-layer-dyn" class="tb-select" aria-label="Select layer to filter">
-          <option value="">Filter: choose layer…</option>
-        </select>
-        <select id="filter-field-dyn" class="tb-select" aria-label="Select attribute" disabled>
-          <option value="">Field…</option>
-        </select>
-        <select id="filter-value-dyn" class="tb-select" aria-label="Select value" disabled>
-          <option value="">Value…</option>
-        </select>
-
-        <!-- clear -->
-        <button id="clear-filters" class="tb-btn" title="Clear filters">
-          <i class="bx bx-filter-alt"></i>
-        </button>
-      </div>
-      <div class="tb-right">
-        <button id="save-state" class="tb-btn" title="Save view & layers"><i class="bx bx-save"></i></button>
-        <button id="restore-state" class="tb-btn" title="Restore saved"><i class="bx bx-history"></i></button>
-        <button id="export-geojson" class="tb-btn" title="Export filtered features"><i class="bx bx-download"></i></button>
-        <button class="toggle-btn" id="sidebar-toggle" title="Toggle sidebar"><i class="bx bx-menu"></i></button>
-      </div>
-    </div>
-
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
   </div>
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="logo">
-      <img src="./resources/icons/logo.png" alt="Logo">
-      <div class="text">GEOHUB</div>
-    </div>
-
-    <h2>Base Layers</h2>
-    <ul>
-      <li><label><input type="radio" name="baseLayerRadioButton" value="OpenTopoMap"> Open Top Map</label></li>
-      <li><label><input type="radio" name="baseLayerRadioButton" value="OSMStand" checked> OSM Standard</label></li>
-      <li><label><input type="radio" name="baseLayerRadioButton" value="CartoLight"> CARTO Positron (Light)</label></li>
-    </ul>
-
-    <h2>Operational Areas</h2>
-    <ul>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="zimbabwe"> Zimbabwe Boundary</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="districts"> Districts</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="wards"> Wards</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="reserve"> Conservancy</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="blocks"> Patrol Blocks</label></li>
-    </ul>
-
-    <h2>Assests and Infrastructure</h2>
-    <ul>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="camps"> Camps</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="waterboundary"> Radio Repeater</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="boreholes"> Waterpoints</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="roads"> Roads</label></li>
-    </ul>
-
-    <h2>Community Projects</h2>
-    <ul>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="projects"> Projects</label></li>
-    </ul>
-
-    <h2>Community Layers</h2>
-    <ul>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="buildings"> Homesteads</label></li>
-      <li><label><input type="checkbox" name="rasterLayerCheckBox" value="villages"> Villages</label></li>
-    </ul>
-  </aside>
-
-  <!-- Feature Details Modal -->
+  <!-- FEATURE MODAL -->
   <div id="feature-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="fm-title">
     <div class="modal-backdrop"></div>
     <div class="modal-dialog">
@@ -117,7 +152,7 @@
     </div>
   </div>
 
-  <!-- JS -->
+  <!-- SCRIPTS -->
   <script src="./libs/v6.14.1-dist/ol.js"></script>
   <script src="https://cdn.maptiler.com/ol-mapbox-style/v5.0.2/olms.js"></script>
   <script src="./libs/proj4js/proj4.js"></script>

@@ -2,7 +2,7 @@
 window.addEventListener('DOMContentLoaded', init);
 
 function init() {
-  // ---------- BASIC MAP SETUP ----------
+  // ---------- MAP BASE ----------
   const extentMap = [3042818.232, -2025209.466, 3500000, -1796054.020];
 
   const attributionControl = new ol.control.Attribution({ collapsible: true });
@@ -69,11 +69,8 @@ function init() {
       .extend([attributionControl, scaleLineControl, zoomSliderControl, fullScreenControl, zoomToExtentControl])
   });
 
-  // ---------- SHORTCUTS & UI REFS ----------
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-
-  const sidebar = $('#sidebar');
+  // ---------- UI REFS ----------
+  const $ = (s) => document.querySelector(s);
   const searchInput = $('#search-input');
   const reserveSel = $('#filter-reserve');
   const filterLayerDyn = $('#filter-layer-dyn');
@@ -85,9 +82,18 @@ function init() {
   const exportBtn = $('#export-geojson');
   const toast = $('#toast');
 
-  $('#sidebar-toggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+  const layersPanel = $('#layers-panel');
+  const layersToggle = $('#layers-toggle');
+  const layersClose = $('#layers-close');
 
-  // popup for coords
+  layersToggle.addEventListener('click', () => {
+    layersPanel.classList.toggle('show');
+  });
+  layersClose.addEventListener('click', () => {
+    layersPanel.classList.remove('show');
+  });
+
+  // popup
   const popupEl = $('#popup-container');
   const popup = new ol.Overlay({ element: popupEl });
   map.addOverlay(popup);
@@ -97,84 +103,64 @@ function init() {
     const typeRaw = feature.get('Type');
     const type = typeRaw ? String(typeRaw).toLowerCase() : '';
     const name = feature.get('Name') || '';
-
     let strokeColor = '#8B4513';
     let strokeWidth = 1;
-    let lineDash = undefined;
+    let lineDash;
 
     if (type === 'national road') {
-      strokeColor = '#5C2E0E';
-      strokeWidth = 2.2;
+      strokeColor = '#5C2E0E'; strokeWidth = 2.2;
     } else if (type === 'district access road') {
-      strokeColor = '#754022';
-      strokeWidth = 1.5;
+      strokeColor = '#754022'; strokeWidth = 1.5;
     } else if (type === 'community access roads') {
-      strokeColor = '#8B4513';
-      strokeWidth = 1.2;
+      strokeColor = '#8B4513'; strokeWidth = 1.2;
     } else if (type === 'park access road') {
-      strokeColor = '#A35B2A';
-      strokeWidth = 1.1;
+      strokeColor = '#A35B2A'; strokeWidth = 1.1;
     } else if (type === 'park feeder road') {
-      strokeColor = '#C7824C';
-      strokeWidth = 1;
+      strokeColor = '#C7824C'; strokeWidth = 1;
     } else if (type === 'tracks') {
-      strokeColor = '#E2BC8E';
-      strokeWidth = 0.8;
+      strokeColor = '#E2BC8E'; strokeWidth = 0.8;
     } else {
-      strokeColor = '#8B4513';
-      strokeWidth = 0.25;
-      lineDash = [4, 4];
+      strokeColor = '#8B4513'; strokeWidth = 0.25; lineDash = [4,4];
     }
 
     const style = new ol.style.Style({
       stroke: new ol.style.Stroke({
         color: strokeColor,
         width: strokeWidth,
-        lineDash: lineDash
+        lineDash
       })
     });
 
     if (name) {
-      style.setText(
-        new ol.style.Text({
-          text: String(name),
-          font: '11px Arial',
-          fill: new ol.style.Fill({ color: '#2b2b2b' }),
-          stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
-          placement: 'line'
-        })
-      );
+      style.setText(new ol.style.Text({
+        text: String(name),
+        font: '11px Arial',
+        fill: new ol.style.Fill({ color: '#2b2b2b' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+        placement: 'line'
+      }));
     }
-
     return style;
   }
 
   function campStyle(feature) {
     const name = feature.get('Name') || '';
-
     return new ol.style.Style({
       image: new ol.style.RegularShape({
         points: 3,
         radius: 10,
         rotation: Math.PI,
-        fill: new ol.style.Fill({
-          color: '#00552C'
-        }),
-        stroke: new ol.style.Stroke({
-          color: '#ffffff',
-          width: 1.5
-        })
+        fill: new ol.style.Fill({ color: '#FF8C00' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
       }),
-      text: name
-        ? new ol.style.Text({
-            text: String(name),
-            font: '11px Arial',
-            fill: new ol.style.Fill({ color: '#00552C' }),
-            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
-            offsetY: -18,
-            textAlign: 'center'
-          })
-        : undefined
+      text: name ? new ol.style.Text({
+        text: String(name),
+        font: '11px Arial',
+        fill: new ol.style.Fill({ color: '#2b2b2b' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+        offsetY: -18,
+        textAlign: 'center'
+      }) : undefined
     });
   }
 
@@ -185,24 +171,9 @@ function init() {
         points: 4,
         radius: 4,
         angle: Math.PI / 4,
-        fill: new ol.style.Fill({
-          color: '#ff0000'
-        }),
-        stroke: new ol.style.Stroke({
-          color: '#ffffff',
-          width: 1.5
-        })
+        fill: new ol.style.Fill({ color: '#ff0000' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
       }),
-      text: name
-        ? new ol.style.Text({
-            text: String(name),
-            font: '11px Arial',
-            fill: new ol.style.Fill({ color: '#2b2b2b' }),
-            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
-            offsetY: -18,
-            textAlign: 'center'
-          })
-        : undefined
     });
   }
 
@@ -213,56 +184,35 @@ function init() {
         points: 3,
         radius: 10,
         rotation: Math.PI,
-        fill: new ol.style.Fill({
-          color: '#14e617ff'
-        }),
-        stroke: new ol.style.Stroke({
-          color: '#ffffff',
-          width: 1.5
-        })
+        fill: new ol.style.Fill({ color: '#14e617ff' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
       }),
-      text: name
-        ? new ol.style.Text({
-            text: String(name),
-            font: '8px Arial',
-            fill: new ol.style.Fill({ color: '#14e617ff' }),
-            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
-            offsetY: -18,
-            textAlign: 'center'
-          })
-        : undefined
+      text: name ? new ol.style.Text({
+        text: String(name),
+        font: '8px Arial',
+        fill: new ol.style.Fill({ color: '#2b2b2b' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+        offsetY: -18,
+        textAlign: 'center'
+      }) : undefined
     });
   }
 
   function waterBoundaryStyle() {
     return new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: '#003366',
-        width: 2
-      }),
-      fill: new ol.style.Fill({
-        color: 'rgba(0, 102, 204, 0.3)'
-      })
+      stroke: new ol.style.Stroke({ color: '#003366', width: 2 }),
+      fill: new ol.style.Fill({ color: 'rgba(0, 102, 204, 0.3)' })
     });
   }
 
-  // grey buildings with glow
   function buildingStyle() {
     return [
       new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: 'rgba(255, 255, 255, 0.5)',
-          width: 6
-        })
+        stroke: new ol.style.Stroke({ color: 'rgba(255, 255, 255, 0.5)', width: 6 })
       }),
       new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(128, 128, 128, 0.85)'
-        }),
-        stroke: new ol.style.Stroke({
-          color: '#666666',
-          width: 1.8
-        })
+        fill: new ol.style.Fill({ color: 'rgba(128, 128, 128, 0.85)' }),
+        stroke: new ol.style.Stroke({ color: '#666666', width: 1.8 })
       })
     ];
   }
@@ -291,14 +241,8 @@ function init() {
     title: 'wards',
     style: (feature) => [
       new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(255,255,255,0.01)'
-        }),
-        stroke: new ol.style.Stroke({
-          color: '#000000',
-          width: 1.5,
-          lineDash: [6, 6]
-        })
+        fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.01)' }),
+        stroke: new ol.style.Stroke({ color: '#000', width: 1.5, lineDash: [6,6] })
       }),
       new ol.style.Style({
         text: new ol.style.Text({
@@ -417,7 +361,7 @@ function init() {
     style: buildingStyle
   });
 
-  // ---- Point-like icons ----
+  // point-like icon layers
   const styleIcons = {
     garden: new ol.style.Icon({ src: './resources/icons/icon-green.png', scale: 0.3 }),
     waterPoint: new ol.style.Icon({ src: './resources/icons/icon-lblue.png', scale: 0.3 }),
@@ -426,13 +370,12 @@ function init() {
     borehole: new ol.style.Icon({ src: './resources/icons/borehole.png', scale: 0.1 })
   };
 
-  // we use only RESERVE + SEARCH
   const filterState = { reserve: '', search: '' };
 
   const waterPoints = makePointLayer({
     url: './resources/shapefiles/WaterPoints.geojson',
-      title: 'waterPoints',
-      icon: styleIcons.waterPoint
+    title: 'waterPoints',
+    icon: styleIcons.waterPoint
   });
   const boreholes = makePointLayer({
     url: './resources/shapefiles/boreholes.geojson',
@@ -476,41 +419,56 @@ function init() {
   });
   map.addLayer(thematicGroup);
 
-  // ---------- BASE LAYER RADIO ----------
-  const baseRadios = $$('input[name=baseLayerRadioButton]');
-  baseRadios.forEach((r) =>
-    r.addEventListener('change', () => {
-      baseMapsLayerGroup.getLayers().forEach((l) => l.setVisible(l.get('title') === r.value));
-      saveSessionState();
-    })
-  );
+  // ---------- LAYERS PANEL JS ----------
+  // collapsible groups
+  document.querySelectorAll('.lp-header').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const body = document.getElementById(target);
+      const open = body.classList.contains('show');
+      if (open) {
+        body.classList.remove('show');
+        btn.classList.remove('is-open');
+      } else {
+        body.classList.add('show');
+        btn.classList.add('is-open');
+      }
+    });
+  });
 
-  // ---------- THEMATIC LAYER CHECKBOX ----------
-  const layerCheckboxes = $$('input[name=rasterLayerCheckBox]');
-  layerCheckboxes.forEach((cb) => (cb.checked = false));
-  layerCheckboxes.forEach((cb) =>
-    cb.addEventListener('change', () => {
-      const want = cb.checked;
-      const title = cb.value;
-      thematicGroup
-        .getLayers()
-        .forEach((l) => {
-          if (l.get('title') === title) l.setVisible(want);
-        });
+  // base layer pills
+  document.querySelectorAll('.layer-pill[data-type="base"]').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const wanted = pill.dataset.layer;
+      document.querySelectorAll('.layer-pill[data-type="base"]').forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      baseMapsLayerGroup.getLayers().forEach((l) => l.setVisible(l.get('title') === wanted));
       saveSessionState();
-    })
-  );
+    });
+  });
+
+  // thematic toggle pills
+  document.querySelectorAll('.layer-pill[data-type="thematic"]').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const title = pill.dataset.layer;
+      const layer = findLayerByTitle(thematicGroup, title);
+      if (!layer) return;
+      const willShow = !layer.getVisible();
+      layer.setVisible(willShow);
+      pill.classList.toggle('active', willShow);
+      saveSessionState();
+    });
+  });
 
   // ---------- POINT LAYERS LIST ----------
   const pointLayers = [projectsLayer, waterPoints, boreholes, campsLayer, woodlots, gabions];
 
-  // populate RESERVE dropdown from point layers once loaded
   Promise.all(pointLayers.map(waitForVectorReady)).then(() => {
     const values = collectUniqueValues(pointLayers, ['Reserve']);
     fillReserveSelect(reserveSel, values['Reserve'] || []);
   });
 
-  // ---------- SIMPLE FILTERS (RESERVE + SEARCH) ----------
+  // ---------- SIMPLE FILTERS ----------
   reserveSel.addEventListener('change', () => {
     filterState.reserve = reserveSel.value;
     applyFilters();
@@ -524,20 +482,10 @@ function init() {
     applyDynamicFilter();
   });
 
-  // ---------- DYNAMIC FILTER STATE ----------
-  const dynamicFilter = {
-    layerTitle: '',
-    field: '',
-    value: ''
-  };
+  // ---------- DYNAMIC FILTER ----------
+  const dynamicFilter = { layerTitle: '', field: '', value: '' };
+  const allFilterableLayers = thematicGroup.getLayers().getArray().filter((l) => l.getSource && l.getSource().getFormat);
 
-  // all vector/thematic layers to filter
-  const allFilterableLayers = thematicGroup
-    .getLayers()
-    .getArray()
-    .filter((l) => l.getSource && l.getSource().getFormat);
-
-  // fill layer dropdown
   allFilterableLayers.forEach((l) => {
     const opt = document.createElement('option');
     opt.value = l.get('title');
@@ -563,24 +511,17 @@ function init() {
 
     const layer = allFilterableLayers.find((l) => l.get('title') === title);
     if (!layer) return;
-
     await waitForVectorReady(layer);
     const feats = layer.getSource().getFeatures();
-    if (!feats.length) {
-      applyDynamicFilter();
-      return;
-    }
+    if (!feats.length) { applyDynamicFilter(); return; }
 
     const firstProps = feats[0].getProperties();
-    Object.keys(firstProps)
-      .filter((k) => k !== 'geometry')
-      .forEach((f) => {
-        const opt = document.createElement('option');
-        opt.value = f;
-        opt.textContent = f;
-        filterFieldDyn.appendChild(opt);
-      });
-
+    Object.keys(firstProps).filter((k) => k !== 'geometry').forEach((f) => {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = f;
+      filterFieldDyn.appendChild(opt);
+    });
     filterFieldDyn.disabled = false;
     applyDynamicFilter();
   });
@@ -600,25 +541,18 @@ function init() {
 
     const layer = allFilterableLayers.find((l) => l.get('title') === dynamicFilter.layerTitle);
     if (!layer) return;
-
     const feats = layer.getSource().getFeatures();
     const vals = new Set();
     feats.forEach((ft) => {
       const v = ft.get(field);
-      if (v !== undefined && v !== null && String(v).trim() !== '') {
-        vals.add(String(v));
-      }
+      if (v !== undefined && v !== null && String(v).trim() !== '') vals.add(String(v));
     });
-
-    Array.from(vals)
-      .sort()
-      .forEach((v) => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v;
-        filterValueDyn.appendChild(opt);
-      });
-
+    Array.from(vals).sort().forEach((v) => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = v;
+      filterValueDyn.appendChild(opt);
+    });
     filterValueDyn.disabled = false;
     applyDynamicFilter();
   });
@@ -628,31 +562,24 @@ function init() {
     applyDynamicFilter();
   });
 
-  // ---------- WRAP LAYERS TO OBEY DYNAMIC FILTER ----------
+  // make each layer obey dynamic filter
   thematicGroup.getLayers().forEach((layer) => {
     const origStyle = layer.getStyle();
     const title = layer.get('title');
     if (!origStyle) return;
-
     layer.setStyle(function (feature, resolution) {
-      if (!passesDynamicFilter(feature, title)) {
-        return null;
-      }
-      if (typeof origStyle === 'function') {
-        return origStyle.call(this, feature, resolution);
-      }
+      if (!passesDynamicFilter(feature, title)) return null;
+      if (typeof origStyle === 'function') return origStyle.call(this, feature, resolution);
       return origStyle;
     });
   });
 
-  // ---------- CLEAR FILTERS ----------
+  // CLEAR
   clearBtn.addEventListener('click', () => {
     reserveSel.value = '';
     filterState.reserve = '';
     searchInput.value = '';
     filterState.search = '';
-
-    // dynamic
     filterLayerDyn.value = '';
     filterFieldDyn.innerHTML = '<option value="">Field…</option>';
     filterFieldDyn.disabled = true;
@@ -661,39 +588,33 @@ function init() {
     dynamicFilter.layerTitle = '';
     dynamicFilter.field = '';
     dynamicFilter.value = '';
-
     applyFilters();
     applyDynamicFilter();
     showToast('Filters cleared');
     saveSessionState();
   });
 
-  // ---------- SAVE / RESTORE ----------
+  // SAVE / RESTORE
   saveBtn.addEventListener('click', () => {
     persistState();
     showToast('Saved');
   });
+
   restoreBtn.addEventListener('click', () => {
     const ok = restoreState();
     showToast(ok ? 'Restored' : 'Nothing saved yet');
   });
 
-  // ---------- EXPORT (download only filtered layer) ----------
+  // EXPORT
   exportBtn.addEventListener('click', () => {
     exportFilteredLayer();
   });
 
-  // ---------- MAP CLICK HANDLING ----------
+  // MAP CLICK
   map.on('singleclick', (e) => {
     const oe = e.originalEvent;
-    if (oe && oe.ctrlKey) {
-      showGeographicCoords(e);
-      return;
-    }
-    if (oe && oe.shiftKey) {
-      showProjectedCoords(e);
-      return;
-    }
+    if (oe && oe.ctrlKey) { showGeographicCoords(e); return; }
+    if (oe && oe.shiftKey) { showProjectedCoords(e); return; }
 
     let hit = map.forEachFeatureAtPixel(
       e.pixel,
@@ -704,11 +625,7 @@ function init() {
       },
       { hitTolerance: 6 }
     );
-
-    if (!hit) {
-      popup.setPosition(undefined);
-      return;
-    }
+    if (!hit) { popup.setPosition(undefined); return; }
 
     if (oe && oe.altKey) {
       openFeatureInNewTab(hit.feature);
@@ -717,8 +634,7 @@ function init() {
     openFeatureModal(hit.feature);
   });
 
-  // ================ HELPERS ==================
-
+  // ---------- HELPERS ----------
   function makePointLayer({ url, title, icon }) {
     const iconStyle = new ol.style.Style({ image: icon });
     return new ol.layer.VectorImage({
@@ -731,37 +647,26 @@ function init() {
   }
 
   function passesFilters(feature) {
+    const clean = (v) => (v ?? '').toString().trim().toLowerCase();
     const r = clean(feature.get('Reserve') || feature.get('reserve'));
     const nm = clean(feature.get('Names') || feature.get('Name'));
-
-    if (filterState.reserve) {
-      if (r !== clean(filterState.reserve)) return false;
-    }
-    if (filterState.search) {
-      if (!nm || !nm.includes(clean(filterState.search))) return false;
-    }
+    if (filterState.reserve && r !== clean(filterState.reserve)) return false;
+    if (filterState.search && (!nm || !nm.includes(clean(filterState.search)))) return false;
     return true;
-
-    function clean(v) {
-      return (v ?? '').toString().trim().toLowerCase();
-    }
   }
 
   function passesDynamicFilter(feature, layerTitle) {
     if (!dynamicFilter.layerTitle) return true;
     if (dynamicFilter.layerTitle !== layerTitle) return true;
     if (!dynamicFilter.field || !dynamicFilter.value) return true;
-
     const raw = feature.get(dynamicFilter.field);
     if (raw == null) return false;
     return String(raw).trim() === String(dynamicFilter.value).trim();
   }
 
   function applyFilters() {
-    // only point layers use the simple reserve/search
     pointLayers.forEach((l) => l.changed());
   }
-
   function applyDynamicFilter() {
     thematicGroup.getLayers().forEach((l) => l.changed());
   }
@@ -787,12 +692,16 @@ function init() {
 
   function collectUniqueValues(layers, fields) {
     const out = Object.fromEntries(fields.map((f) => [f, new Set()]));
-    const push = (f, val) => val != null && String(val).trim() && out[f].add(String(val));
     layers.forEach((l) => {
       const src = l.getSource();
-      (src.getFeatures() || []).forEach((ft) => fields.forEach((f) => push(f, ft.get(f))));
+      (src.getFeatures() || []).forEach((ft) => {
+        fields.forEach((f) => {
+          const v = ft.get(f);
+          if (v != null && String(v).trim()) out[f].add(String(v));
+        });
+      });
     });
-    return Object.fromEntries(fields.map((f) => [f, Array.from(out[f]).sort((a, b) => a.localeCompare(b))]));
+    return Object.fromEntries(fields.map((f) => [f, Array.from(out[f]).sort((a,b)=>a.localeCompare(b))]));
   }
 
   function fillReserveSelect(selectEl, values) {
@@ -821,33 +730,25 @@ function init() {
   function showToast(msg) {
     toast.textContent = msg;
     toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 1500);
+    setTimeout(() => toast.classList.add('hidden'), 1600);
   }
 
-  // ---------- EXPORT ONLY FILTERED LAYER ----------
+  function findLayerByTitle(group, title) {
+    return group.getLayers().getArray().find((l) => l.get('title') === title);
+  }
+
+  // EXPORT
   function exportFilteredLayer() {
     const layerTitle = dynamicFilter.layerTitle;
-    if (!layerTitle) {
-      showToast('Select a layer in the filter first.');
-      return;
-    }
-
-    const layer = thematicGroup
-      .getLayers()
-      .getArray()
-      .find((l) => l.get('title') === layerTitle);
-
-    if (!layer || !layer.getSource) {
-      showToast('Layer not found or not exportable.');
-      return;
-    }
+    if (!layerTitle) { showToast('Select a layer in the filter first.'); return; }
+    const layer = findLayerByTitle(thematicGroup, layerTitle);
+    if (!layer || !layer.getSource) { showToast('Layer not found.'); return; }
 
     const feats = layer.getSource().getFeatures();
     const format = new ol.format.GeoJSON();
 
     const filtered = feats
       .filter((f) => {
-        // only point layers also obey reserve/search
         const basicOK = isPointLayerTitle(layerTitle) ? passesFilters(f) : true;
         const dynOK = passesDynamicFilter(f, layerTitle);
         return basicOK && dynOK;
@@ -859,10 +760,7 @@ function init() {
         return c;
       });
 
-    if (!filtered.length) {
-      showToast('No features to export for this filter.');
-      return;
-    }
+    if (!filtered.length) { showToast('No features to export.'); return; }
 
     const geojson = format.writeFeaturesObject(filtered, {
       featureProjection: 'EPSG:4326',
@@ -884,22 +782,17 @@ function init() {
     URL.revokeObjectURL(url);
   }
 
-  // ---------- SAVE / RESTORE ----------
+  // SAVE / RESTORE
   const STATE_KEY = 'geohub_state_v1';
-
   function persistState() {
     const view = map.getView();
-    const base = baseMapsLayerGroup.getLayers().getArray().find((l) => l.getVisible());
-    const visible = thematicGroup
-      .getLayers()
-      .getArray()
-      .filter((l) => l.getVisible())
-      .map((l) => l.get('title'));
+    const baseLayer = baseMapsLayerGroup.getLayers().getArray().find((l) => l.getVisible());
+    const visibleLayers = thematicGroup.getLayers().getArray().filter((l) => l.getVisible()).map((l) => l.get('title'));
 
     const state = {
       view: { center: view.getCenter(), zoom: view.getZoom(), rotation: view.getRotation() },
-      base: base ? base.get('title') : 'OSMStand',
-      visibleLayers: visible,
+      base: baseLayer ? baseLayer.get('title') : 'OSMStand',
+      visibleLayers,
       filters: {
         ...filterState,
         dynamic: { ...dynamicFilter }
@@ -907,11 +800,9 @@ function init() {
     };
     localStorage.setItem(STATE_KEY, JSON.stringify(state));
   }
-
   function saveSessionState() {
     persistState();
   }
-
   function restoreState() {
     const raw = localStorage.getItem(STATE_KEY);
     if (!raw) return false;
@@ -926,12 +817,17 @@ function init() {
 
     if (state.base) {
       baseMapsLayerGroup.getLayers().forEach((l) => l.setVisible(l.get('title') === state.base));
-      baseRadios.forEach((r) => (r.checked = r.value === state.base));
+      // sync pills
+      document.querySelectorAll('.layer-pill[data-type="base"]').forEach((p) => {
+        p.classList.toggle('active', p.dataset.layer === state.base);
+      });
     }
 
     const visibleSet = new Set(state.visibleLayers || []);
     thematicGroup.getLayers().forEach((l) => l.setVisible(visibleSet.has(l.get('title'))));
-    layerCheckboxes.forEach((cb) => (cb.checked = visibleSet.has(cb.value)));
+    document.querySelectorAll('.layer-pill[data-type="thematic"]').forEach((p) => {
+      p.classList.toggle('active', visibleSet.has(p.dataset.layer));
+    });
 
     if (state.filters) {
       filterState.reserve = state.filters.reserve || '';
@@ -943,45 +839,23 @@ function init() {
         dynamicFilter.layerTitle = state.filters.dynamic.layerTitle || '';
         dynamicFilter.field = state.filters.dynamic.field || '';
         dynamicFilter.value = state.filters.dynamic.value || '';
-
-        if (dynamicFilter.layerTitle) {
-          filterLayerDyn.value = dynamicFilter.layerTitle;
-        }
+        if (dynamicFilter.layerTitle) filterLayerDyn.value = dynamicFilter.layerTitle;
       }
 
       applyFilters();
       applyDynamicFilter();
     }
+
     return true;
   }
 
-  // try to restore once
+  // try restore once
   restoreState();
 
-  // ---------- FEATURE MODAL / PAGE ----------
+  // FEATURE MODAL helpers (same as before)
   const IMAGE_BASE_DIR = './resources/images/dams/';
   const IMAGE_EXT = '.jpg';
-  const IMAGE_KEYS = [
-    'imgUrl',
-    'imgURL',
-    'IMGURL',
-    'Picture',
-    'picture',
-    'Photo',
-    'photo',
-    'Image',
-    'image',
-    'Img',
-    'img',
-    'ImageURL',
-    'image_url',
-    'URL',
-    'url',
-    'Link',
-    'link',
-    'PIC_URL',
-    'pic_url'
-  ];
+  const IMAGE_KEYS = ['imgUrl','imgURL','IMGURL','Picture','picture','Photo','photo','Image','image','Img','img','ImageURL','image_url','URL','url','Link','link','PIC_URL','pic_url'];
 
   function getImageUrlFromFeature(ft) {
     for (const k of IMAGE_KEYS) {
@@ -997,41 +871,20 @@ function init() {
   }
 
   function buildAttributesTable(ft) {
-    const preferred = [
-      'Names',
-      'Name',
-      'Project',
-      'Type',
-      'Program',
-      'District',
-      'Ward',
-      'Reserve',
-      'Village',
-      'Longitude',
-      'Latitude'
-    ];
+    const preferred = ['Names','Name','Project','Type','Program','District','Ward','Reserve','Village','Longitude','Latitude'];
     const rows = [];
-
     preferred.forEach((k) => {
       const v = ft.get(k);
       if (v != null && String(v).trim()) rows.push([k, v]);
     });
-
     const seen = new Set(rows.map(([k]) => k));
-    Object.keys(ft.getProperties())
-      .sort()
-      .forEach((k) => {
-        if (k === 'geometry' || seen.has(k)) return;
-        const v = ft.get(k);
-        if (v != null && String(v).trim()) rows.push([k, v]);
-      });
-
+    Object.keys(ft.getProperties()).sort().forEach((k) => {
+      if (k === 'geometry' || seen.has(k)) return;
+      const v = ft.get(k);
+      if (v != null && String(v).trim()) rows.push([k, v]);
+    });
     if (!rows.length) return '<em>No attributes</em>';
-
-    const html = rows
-      .map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(String(v))}</td></tr>`)
-      .join('');
-    return `<table class="fm-table">${html}</table>`;
+    return `<table class="fm-table">${rows.map(([k,v])=>`<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(String(v))}</td></tr>`).join('')}</table>`;
   }
 
   function openFeatureModal(ft) {
@@ -1045,9 +898,7 @@ function init() {
 
     const imgUrl = getImageUrlFromFeature(ft);
     const imgHtml = imgUrl
-      ? `<img class="fm-image" src="${escapeAttr(imgUrl)}" alt="${escapeAttr(
-          title
-        )}" onerror="this.style.display='none'">`
+      ? `<img class="fm-image" src="${escapeAttr(imgUrl)}" alt="${escapeAttr(title)}" onerror="this.style.display='none'">`
       : `<div class="fm-image" style="display:grid;place-items:center;color:#999;">No image</div>`;
 
     body.innerHTML = `
@@ -1062,23 +913,14 @@ function init() {
     const close = () => modal.classList.add('hidden');
     btnClose.onclick = close;
     modal.querySelector('.modal-backdrop').onclick = close;
-    window.addEventListener(
-      'keydown',
-      (ev) => {
-        if (ev.key === 'Escape') close();
-      },
-      { once: true }
-    );
+    window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') close(); }, { once: true });
 
     btnOpenTab.onclick = () => openFeatureInNewTab(ft);
   }
 
   function openFeatureInNewTab(ft) {
     const w = window.open('', '_blank');
-    if (!w) {
-      showToast('Popup blocked. Please allow popups.');
-      return;
-    }
+    if (!w) { showToast('Popup blocked.'); return; }
     w.document.write(buildFeaturePageHtml(ft));
     w.document.close();
   }
@@ -1087,47 +929,11 @@ function init() {
     const title = escapeHtml(ft.get('Names') || ft.get('Name') || 'Feature Details');
     const img = getImageUrlFromFeature(ft);
     const table = buildAttributesTable(ft);
-
-    const css = `
-      body{font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial; margin:0; background:#fafafa;}
-      header{background:#228B22;color:#fff;padding:16px 20px;}
-      main{padding:20px; max-width: 1040px; margin: 0 auto;}
-      .hero{display:grid;grid-template-columns: 420px 1fr; gap:16px;align-items:start;}
-      .img{width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; background:#f2f2f2; border:1px solid #eee;}
-      table{width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,.05);}
-      th,td{padding:10px 12px;border-bottom:1px solid #eee;text-align:left;vertical-align:top;font-size:14px;}
-      th{width:200px;color:#444;font-weight:600;background:#fbfbfb;}
-      @media (max-width: 780px){ .hero{grid-template-columns: 1fr;} th{width:150px;} }
-    `;
-
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${title}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-  <style>${css}</style>
-</head>
-<body>
-<header><h2>${title}</h2></header>
-<main>
-  <section class="hero">
-    <div>${
-      img
-        ? `<img class="img" src="${escapeAttr(img)}" alt="${title}" onerror="this.style.display='none'">`
-        : `<div class="img" style="display:grid;place-items:center;color:#999;">No image</div>`
-    }</div>
-    <div>${table}</div>
-  </section>
-</main>
-</body>
-</html>`;
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head><body>${table}${img ? `<img src="${img}">` : ''}</body></html>`;
   }
 
   function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    return s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-  function escapeAttr(s) {
-    return escapeHtml(s).replace(/"/g, '&quot;');
-  }
+  function escapeAttr(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
 }
