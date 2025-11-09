@@ -158,7 +158,7 @@ function init() {
         radius: 10,
         rotation: Math.PI,
         fill: new ol.style.Fill({
-          color: '#FF8C00'
+          color: '#00552C'
         }),
         stroke: new ol.style.Stroke({
           color: '#ffffff',
@@ -169,7 +169,7 @@ function init() {
         ? new ol.style.Text({
             text: String(name),
             font: '11px Arial',
-            fill: new ol.style.Fill({ color: '#2b2b2b' }),
+            fill: new ol.style.Fill({ color: '#00552C' }),
             stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
             offsetY: -18,
             textAlign: 'center'
@@ -225,7 +225,7 @@ function init() {
         ? new ol.style.Text({
             text: String(name),
             font: '8px Arial',
-            fill: new ol.style.Fill({ color: '#2b2b2b' }),
+            fill: new ol.style.Fill({ color: '#14e617ff' }),
             stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
             offsetY: -18,
             textAlign: 'center'
