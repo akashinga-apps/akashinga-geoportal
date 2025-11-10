@@ -69,13 +69,12 @@ function init() {
       .extend([attributionControl, scaleLineControl, zoomSliderControl, fullScreenControl, zoomToExtentControl])
   });
 
-    // make map responsive to viewport changes (phones, tablets)
+  // make map responsive to viewport changes (phones, tablets)
   function updateMapSize() {
     map.updateSize();
   }
   window.addEventListener('resize', updateMapSize);
   window.addEventListener('orientationchange', updateMapSize);
-
 
   // ---------- UI REFS ----------
   const $ = (s) => document.querySelector(s);
@@ -101,10 +100,32 @@ function init() {
     layersPanel.classList.remove('show');
   });
 
-  // popup
+  // popup overlay
   const popupEl = $('#popup-container');
   const popup = new ol.Overlay({ element: popupEl });
   map.addOverlay(popup);
+
+  // ---------- FILTER STATE (needed by styles) ----------
+  const filterState = { reserve: '', search: '' };
+  const dynamicFilter = { layerTitle: '', field: '', value: '' };
+
+  // these are declared early so style functions can call them
+  function passesFilters(feature) {
+    const clean = (v) => (v ?? '').toString().trim().toLowerCase();
+    const r = clean(feature.get('Reserve') || feature.get('reserve'));
+    const nm = clean(feature.get('Names') || feature.get('Name'));
+    if (filterState.reserve && r !== clean(filterState.reserve)) return false;
+    if (filterState.search && (!nm || !nm.includes(clean(filterState.search)))) return false;
+    return true;
+  }
+  function passesDynamicFilter(feature, layerTitle) {
+    if (!dynamicFilter.layerTitle) return true;
+    if (dynamicFilter.layerTitle !== layerTitle) return true;
+    if (!dynamicFilter.field || !dynamicFilter.value) return true;
+    const raw = feature.get(dynamicFilter.field);
+    if (raw == null) return false;
+    return String(raw).trim() === String(dynamicFilter.value).trim();
+  }
 
   // ---------- STYLES ----------
   function roadStyle(feature) {
@@ -153,62 +174,67 @@ function init() {
 
   function campStyle(feature) {
     const name = feature.get('Name') || '';
-    return new ol.style.Style({
-      image: new ol.style.RegularShape({
-        points: 3,
-        radius: 10,
-        rotation: Math.PI,
-        fill: new ol.style.Fill({ color: '#FF8C00' }),
-        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
-      }),
-      text: name ? new ol.style.Text({
-        text: String(name),
-        font: '11px Arial',
-        fill: new ol.style.Fill({ color: '#2b2b2b' }),
-        stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
-        offsetY: -18,
-        textAlign: 'center'
-      }) : undefined
-    });
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'camps'))
+      ? new ol.style.Style({
+          image: new ol.style.RegularShape({
+            points: 3,
+            radius: 10,
+            rotation: Math.PI,
+            fill: new ol.style.Fill({ color: '#FF8C00' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
+          }),
+          text: name ? new ol.style.Text({
+            text: String(name),
+            font: '11px Arial',
+            fill: new ol.style.Fill({ color: '#2b2b2b' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+            offsetY: -18,
+            textAlign: 'center'
+          }) : undefined
+        })
+      : null;
   }
 
   function villageStyle(feature) {
-    const name = feature.get('Name') || '';
-    return new ol.style.Style({
-      image: new ol.style.RegularShape({
-        points: 4,
-        radius: 4,
-        angle: Math.PI / 4,
-        fill: new ol.style.Fill({ color: '#ff0000' }),
-        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
-      }),
-    });
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'villages'))
+      ? new ol.style.Style({
+          image: new ol.style.RegularShape({
+            points: 4,
+            radius: 6,
+            angle: Math.PI / 4,
+            fill: new ol.style.Fill({ color: '#ff0000' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
+          })
+        })
+      : null;
   }
 
   function projectStyle(feature) {
     const name = feature.get('Name') || '';
-    return new ol.style.Style({
-      image: new ol.style.RegularShape({
-        points: 3,
-        radius: 10,
-        rotation: Math.PI,
-        fill: new ol.style.Fill({ color: '#14e617ff' }),
-        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
-      }),
-      text: name ? new ol.style.Text({
-        text: String(name),
-        font: '8px Arial',
-        fill: new ol.style.Fill({ color: '#2b2b2b' }),
-        stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
-        offsetY: -18,
-        textAlign: 'center'
-      }) : undefined
-    });
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'projects'))
+      ? new ol.style.Style({
+          image: new ol.style.RegularShape({
+            points: 3,
+            radius: 10,
+            rotation: Math.PI,
+            fill: new ol.style.Fill({ color: '#14e617ff' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
+          }),
+          text: name ? new ol.style.Text({
+            text: String(name),
+            font: '8px Arial',
+            fill: new ol.style.Fill({ color: '#2b2b2b' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+            offsetY: -18,
+            textAlign: 'center'
+          }) : undefined
+        })
+      : null;
   }
 
   function waterBoundaryStyle() {
     return new ol.style.Style({
-      stroke: new ol.style.Stroke({ color: '#003366', width: 2 }),
+      stroke: new ol.style.Stroke({ color: '#003366', width: 0 }),
       fill: new ol.style.Fill({ color: 'rgba(0, 102, 204, 0.3)' })
     });
   }
@@ -239,6 +265,105 @@ function init() {
     });
   }
 
+  // ---- NEW: waterpoint style by TYPE ----
+  const waterpointStyleCache = {};
+  function waterPointStyle(feature) {
+    if (!passesFilters(feature) || !passesDynamicFilter(feature, 'waterPoints')) return null;
+
+    const rawType = feature.get('TYPE') || feature.get('Type') || '';
+    const type = String(rawType).trim().toLowerCase();
+
+    let key;
+    if (type.includes('borehole')) key = 'borehole';
+    else if (type.includes('deep')) key = 'deep well';
+    else if (type.includes('shallow')) key = 'shallow well';
+    else if (type.includes('spring')) key = 'spring';
+    else if (type.includes('sand')) key = 'sand abstraction';
+    else if (type.includes('dam')) key = 'dam';
+    else if (type.includes('river')) key = 'river';
+    else if (type.includes('artesian') || type.includes('artsian')) key = 'artesian';
+    else if (type.includes('rain')) key = 'rain water';
+    else key = 'other';
+
+    const colorByType = {
+      'borehole': '#0074D9',
+      'deep well': '#85144b',
+      'shallow well': '#2ECC40',
+      'spring': '#FF851B',
+      'sand abstraction': '#B10DC9',
+      'dam': '#FF4136',
+      'river': '#7FDBFF',
+      'artesian': '#3D9970',
+      'rain water': '#39CCCC',
+      'other': '#AAAAAA'
+    };
+
+    const fillColor = colorByType[key] || colorByType['other'];
+
+    if (!waterpointStyleCache[key]) {
+      waterpointStyleCache[key] = new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 3,
+          fill: new ol.style.Fill({ color: fillColor }),
+          stroke: new ol.style.Stroke({ color: '#ffffff', width: 1 })
+        })
+      });
+    }
+    return waterpointStyleCache[key];
+  }
+
+  // ---- OTHER point styles in same pattern ----
+  function boreholeStyle(feature) {
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'boreholes'))
+      ? new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({ color: '#0052cc' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1 })
+          })
+        })
+      : null;
+  }
+
+  function gardenStyle(feature) {
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'gardens'))
+      ? new ol.style.Style({
+          image: new ol.style.RegularShape({
+            points: 4,
+            radius: 6,
+            angle: Math.PI / 4,
+            fill: new ol.style.Fill({ color: '#1C4701' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1 })
+          })
+        })
+      : null;
+  }
+
+  function woodlotStyle(feature) {
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'woodlots'))
+      ? new ol.style.Style({
+          image: new ol.style.RegularShape({
+            points: 5,
+            radius: 6,
+            fill: new ol.style.Fill({ color: '#0a7c3a' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1 })
+          })
+        })
+      : null;
+  }
+
+  function gabionStyle(feature) {
+    return (passesFilters(feature) && passesDynamicFilter(feature, 'gabions'))
+      ? new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 4,
+            fill: new ol.style.Fill({ color: '#cccccc' }),
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1 })
+          })
+        })
+      : null;
+  }
+
   // ---------- LAYERS ----------
   const wardsLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
@@ -252,15 +377,7 @@ function init() {
         fill: new ol.style.Fill({ color: 'rgba(255,255,255,0.01)' }),
         stroke: new ol.style.Stroke({ color: '#000', width: 1.5, lineDash: [6,6] })
       }),
-      new ol.style.Style({
-        text: new ol.style.Text({
-          text: String(feature.get('Names') || feature.get('Name') || ''),
-          font: '11px Arial',
-          fill: new ol.style.Fill({ color: '#000' }),
-          stroke: new ol.style.Stroke({ color: '#fff', width: 3 }),
-          textAlign: 'center'
-        })
-      })
+      labelStyle(feature, 11)
     ]
   });
 
@@ -319,7 +436,6 @@ function init() {
     style: roadStyle
   });
 
-
   const waterBoundaryLayer = new ol.layer.Vector({
     source: new ol.source.Vector({
       url: './resources/shapefiles/Water.geojson',
@@ -370,46 +486,60 @@ function init() {
     style: campStyle
   });
 
-
-  // point-like icon layers
-  const styleIcons = {
-    garden: new ol.style.Icon({ src: './resources/icons/icon-green.png', scale: 0.3 }),
-    waterPoint: new ol.style.Icon({ src: './resources/icons/icon-lblue.png', scale: 0.3 }),
-    woodlot: new ol.style.Icon({ src: './resources/icons/tree.png', scale: 0.12 }),
-    gabion: new ol.style.Icon({ src: './resources/icons/icon-white.png', scale: 0.3 }),
-    borehole: new ol.style.Icon({ src: './resources/icons/borehole.png', scale: 0.1 })
-  };
-
-  const filterState = { reserve: '', search: '' };
-
-  const waterPoints = makePointLayer({
-    url: './resources/shapefiles/WaterPoints.geojson',
+  // ---- NEW explicit point layers ----
+  const waterPointsLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/WaterPoints.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
     title: 'waterPoints',
-    icon: styleIcons.waterPoint
+    style: waterPointStyle
   });
-  const boreholes = makePointLayer({
-    url: './resources/shapefiles/boreholes.geojson',
+
+  const boreholesLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/boreholes.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
     title: 'boreholes',
-    icon: styleIcons.borehole
+    style: boreholeStyle
   });
-  const gardens = makePointLayer({
-    url: './resources/shapefiles/gardens.geojson',
+
+  const gardensLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/gardens.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
     title: 'gardens',
-    icon: styleIcons.garden
+    style: gardenStyle
   });
-  const woodlots = makePointLayer({
-    url: './resources/shapefiles/Woodlots.geojson',
+
+  const woodlotsLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Woodlots.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
     title: 'woodlots',
-    icon: styleIcons.woodlot
+    style: woodlotStyle
   });
-  const gabions = makePointLayer({
-    url: './resources/shapefiles/gabions.geojson',
+
+  const gabionsLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/gabions.geojson',
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
     title: 'gabions',
-    icon: styleIcons.gabion
+    style: gabionStyle
   });
 
   const thematicGroup = new ol.layer.Group({
     layers: [
+      waterBoundaryLayer,
       zimbabweBoundary,
       districtsLayer,
       reserveLayer,
@@ -417,20 +547,18 @@ function init() {
       roadsLayer,
       villageLayer,
       buildingsLayer,
-      campsLayer,
-      waterBoundaryLayer,
-      gardens,
-      waterPoints,
+      gardensLayer,
+      waterPointsLayer,
       projectsLayer,
-      gabions,
-      woodlots,
-      boreholes
+      campsLayer,
+      gabionsLayer,
+      woodlotsLayer,
+      boreholesLayer
     ]
   });
   map.addLayer(thematicGroup);
 
   // ---------- LAYERS PANEL JS ----------
-  // collapsible groups
   document.querySelectorAll('.lp-header').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.target;
@@ -470,8 +598,8 @@ function init() {
     });
   });
 
-  // ---------- POINT LAYERS LIST ----------
-  const pointLayers = [projectsLayer, waterPoints, boreholes, campsLayer, woodlots, gabions];
+  // ---------- POINT LAYERS LIST (for reserve dropdown) ----------
+  const pointLayers = [projectsLayer, waterPointsLayer, boreholesLayer, campsLayer, woodlotsLayer, gabionsLayer, villageLayer];
 
   Promise.all(pointLayers.map(waitForVectorReady)).then(() => {
     const values = collectUniqueValues(pointLayers, ['Reserve']);
@@ -493,7 +621,6 @@ function init() {
   });
 
   // ---------- DYNAMIC FILTER ----------
-  const dynamicFilter = { layerTitle: '', field: '', value: '' };
   const allFilterableLayers = thematicGroup.getLayers().getArray().filter((l) => l.getSource && l.getSource().getFormat);
 
   allFilterableLayers.forEach((l) => {
@@ -572,19 +699,7 @@ function init() {
     applyDynamicFilter();
   });
 
-  // make each layer obey dynamic filter
-  thematicGroup.getLayers().forEach((layer) => {
-    const origStyle = layer.getStyle();
-    const title = layer.get('title');
-    if (!origStyle) return;
-    layer.setStyle(function (feature, resolution) {
-      if (!passesDynamicFilter(feature, title)) return null;
-      if (typeof origStyle === 'function') return origStyle.call(this, feature, resolution);
-      return origStyle;
-    });
-  });
-
-  // CLEAR
+  // ---------- CLEAR ----------
   clearBtn.addEventListener('click', () => {
     reserveSel.value = '';
     filterState.reserve = '';
@@ -604,7 +719,7 @@ function init() {
     saveSessionState();
   });
 
-  // SAVE / RESTORE
+  // ---------- SAVE / RESTORE ----------
   saveBtn.addEventListener('click', () => {
     persistState();
     showToast('Saved');
@@ -615,12 +730,12 @@ function init() {
     showToast(ok ? 'Restored' : 'Nothing saved yet');
   });
 
-  // EXPORT
+  // ---------- EXPORT ----------
   exportBtn.addEventListener('click', () => {
     exportFilteredLayer();
   });
 
-  // MAP CLICK
+  // ---------- MAP CLICK ----------
   map.on('singleclick', (e) => {
     const oe = e.originalEvent;
     if (oe && oe.ctrlKey) { showGeographicCoords(e); return; }
@@ -644,37 +759,9 @@ function init() {
     openFeatureModal(hit.feature);
   });
 
-  // ---------- HELPERS ----------
-  function makePointLayer({ url, title, icon }) {
-    const iconStyle = new ol.style.Style({ image: icon });
-    return new ol.layer.VectorImage({
-      source: new ol.source.Vector({ url, format: new ol.format.GeoJSON() }),
-      title,
-      visible: false,
-      renderMode: 'image',
-      style: (feature) => (passesFilters(feature) && passesDynamicFilter(feature, title) ? iconStyle : null)
-    });
-  }
-
-  function passesFilters(feature) {
-    const clean = (v) => (v ?? '').toString().trim().toLowerCase();
-    const r = clean(feature.get('Reserve') || feature.get('reserve'));
-    const nm = clean(feature.get('Names') || feature.get('Name'));
-    if (filterState.reserve && r !== clean(filterState.reserve)) return false;
-    if (filterState.search && (!nm || !nm.includes(clean(filterState.search)))) return false;
-    return true;
-  }
-
-  function passesDynamicFilter(feature, layerTitle) {
-    if (!dynamicFilter.layerTitle) return true;
-    if (dynamicFilter.layerTitle !== layerTitle) return true;
-    if (!dynamicFilter.field || !dynamicFilter.value) return true;
-    const raw = feature.get(dynamicFilter.field);
-    if (raw == null) return false;
-    return String(raw).trim() === String(dynamicFilter.value).trim();
-  }
-
+  // ---------- APPLY FUNCTIONS ----------
   function applyFilters() {
+    // force point layers to re-eval styles
     pointLayers.forEach((l) => l.changed());
   }
   function applyDynamicFilter() {
@@ -682,9 +769,10 @@ function init() {
   }
 
   function isPointLayerTitle(t) {
-    return ['projects', 'waterPoints', 'boreholes', 'camps', 'woodlots', 'gabions'].includes(t);
+    return ['projects', 'waterPoints', 'boreholes', 'camps', 'woodlots', 'gabions', 'villages', 'gardens'].includes(t);
   }
 
+  // ---------- HELPERS ----------
   function waitForVectorReady(layer) {
     return new Promise((resolve) => {
       const src = layer.getSource();
@@ -755,7 +843,7 @@ function init() {
     if (!layer || !layer.getSource) { showToast('Layer not found.'); return; }
 
     const feats = layer.getSource().getFeatures();
-    const format = new ol.format.GeoJSON();
+    const format = new ol.format.KML();
 
     const filtered = feats
       .filter((f) => {
@@ -827,7 +915,6 @@ function init() {
 
     if (state.base) {
       baseMapsLayerGroup.getLayers().forEach((l) => l.setVisible(l.get('title') === state.base));
-      // sync pills
       document.querySelectorAll('.layer-pill[data-type="base"]').forEach((p) => {
         p.classList.toggle('active', p.dataset.layer === state.base);
       });
@@ -862,7 +949,7 @@ function init() {
   // try restore once
   restoreState();
 
-  // FEATURE MODAL helpers (same as before)
+  // FEATURE MODAL helpers
   const IMAGE_BASE_DIR = './resources/images/dams/';
   const IMAGE_EXT = '.jpg';
   const IMAGE_KEYS = ['imgUrl','imgURL','IMGURL','Picture','picture','Photo','photo','Image','image','Img','img','ImageURL','image_url','URL','url','Link','link','PIC_URL','pic_url'];

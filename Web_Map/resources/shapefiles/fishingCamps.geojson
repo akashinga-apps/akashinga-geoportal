@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"name": "fishingCamps",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": null, "Name": "Sinamwenda fishing camp" }, "geometry": { "type": "Point", "coordinates": [ 27.833962, -17.140343, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Sengwa fishing camp" }, "geometry": { "type": "Point", "coordinates": [ 27.975227866698777, -17.030743268139805, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Mujele fishing camp" }, "geometry": { "type": "Point", "coordinates": [ 27.92945, -17.087434, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Chipampa fishing camp" }, "geometry": { "type": "Point", "coordinates": [ 27.897898118501871, -17.101994130620561, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Chiyobola fishing camp" }, "geometry": { "type": "Point", "coordinates": [ 27.878555035716651, -17.116245579818649, 0.0 ] } },
+{ "type": "Feature", "properties": { "id": null, "Name": "Chibuyu fishing camp" }, "geometry": { "type": "Point", "coordinates": [ 27.869674036839889, -17.125534082929029, 0.0 ] } }
+]
+}
