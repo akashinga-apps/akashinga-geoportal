@@ -364,6 +364,34 @@ function init() {
       : null;
   }
 
+
+    // park polygons – from WDPA-like dataset
+  function parksStyle(feature) {
+    const name = feature.get('NAME') || feature.get('Orig_Name') || feature.get('ORIG_NAME');
+    return [
+      new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: '#0f5e19'  // soft green
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#2e8b57',
+          width: 1.2
+        })
+      }),
+      name
+        ? new ol.style.Style({
+            text: new ol.style.Text({
+              text: String(name),
+              font: '11px Arial',
+              fill: new ol.style.Fill({ color: '#06310b' }),
+              stroke: new ol.style.Stroke({ color: 'rgba(255,255,255,0.95)', width: 3 })
+            })
+          })
+        : null
+    ].filter(Boolean);
+  }
+
+
   // ---------- LAYERS ----------
   const wardsLayer = new ol.layer.VectorImage({
     source: new ol.source.Vector({
@@ -536,11 +564,22 @@ function init() {
     title: 'gabions',
     style: gabionStyle
   });
+  const parksLayer = new ol.layer.VectorImage({
+    source: new ol.source.Vector({
+      url: './resources/shapefiles/Parks.geojson',   // <-- make sure filename matches yours
+      format: new ol.format.GeoJSON()
+    }),
+    visible: false,
+    title: 'parks',
+    style: parksStyle
+  });
+
 
   const thematicGroup = new ol.layer.Group({
     layers: [
       waterBoundaryLayer,
       zimbabweBoundary,
+      parksLayer,
       districtsLayer,
       reserveLayer,
       wardsLayer,
