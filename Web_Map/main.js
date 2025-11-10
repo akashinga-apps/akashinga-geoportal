@@ -843,7 +843,7 @@ function init() {
     if (!layer || !layer.getSource) { showToast('Layer not found.'); return; }
 
     const feats = layer.getSource().getFeatures();
-    const format = new ol.format.KML();
+    const format = new ol.format.GeoJSON();
 
     const filtered = feats
       .filter((f) => {
