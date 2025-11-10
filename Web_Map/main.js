@@ -196,18 +196,32 @@ function init() {
   }
 
   function villageStyle(feature) {
-    return (passesFilters(feature) && passesDynamicFilter(feature, 'villages'))
-      ? new ol.style.Style({
-          image: new ol.style.RegularShape({
-            points: 4,
-            radius: 6,
-            angle: Math.PI / 4,
+    // respect existing filters
+    if (!passesFilters(feature) || !passesDynamicFilter(feature, 'villages')) return null;
+
+    const name = feature.get('Name') || feature.get('NAME') || '';
+
+    return new ol.style.Style({
+      image: new ol.style.RegularShape({
+        points: 4,
+        radius: 4,
+        angle: Math.PI / 4,
+        fill: new ol.style.Fill({ color: '#ff0000' }),
+        stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
+      }),
+      text: name
+        ? new ol.style.Text({
+            text: String(name),
+            font: '11px Arial',
             fill: new ol.style.Fill({ color: '#ff0000' }),
-            stroke: new ol.style.Stroke({ color: '#ffffff', width: 1.5 })
+            stroke: new ol.style.Stroke({ color: '#ffffff', width: 3 }),
+            offsetY: -16,
+            textAlign: 'center'
           })
-        })
-      : null;
+        : undefined
+    });
   }
+
 
   function projectStyle(feature) {
     const name = feature.get('Name') || '';
@@ -489,7 +503,7 @@ function init() {
       url: './resources/shapefiles/villages.geojson',
       format: new ol.format.GeoJSON()
     }),
-    visible: false,
+    visible: true,
     title: 'villages',
     style: villageStyle
   });
@@ -499,7 +513,7 @@ function init() {
       url: './resources/shapefiles/Homesteads.geojson',
       format: new ol.format.GeoJSON()
     }),
-    visible: false,
+    visible: true,
     title: 'buildings',
     style: buildingStyle
   });
@@ -510,7 +524,7 @@ function init() {
       format: new ol.format.GeoJSON()
     }),
     visible: true,
-    title: 'camps',
+    title: 'true',
     style: campStyle
   });
 
@@ -569,7 +583,7 @@ function init() {
       url: './resources/shapefiles/Parks.geojson',   // <-- make sure filename matches yours
       format: new ol.format.GeoJSON()
     }),
-    visible: false,
+    visible: true,
     title: 'parks',
     style: parksStyle
   });
